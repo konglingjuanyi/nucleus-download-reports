@@ -1,6 +1,6 @@
 package org.gooru.nucleus.reports.downlod.service;
 
-import java.io.File;
+import io.vertx.core.json.JsonObject;
 
 public interface ClassExportService {
 
@@ -8,6 +8,6 @@ public interface ClassExportService {
 		 return new ClassExportServiceImpl();
 	}
 	
-	File exportCsv(String classId, String courseId, String unitId, String lessonId, String collectionId, String type, String userId);
+	JsonObject exportCsv(String classId, String courseId, String userId, String zipFileName);
 
 }

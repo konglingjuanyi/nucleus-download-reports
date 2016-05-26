@@ -20,5 +20,8 @@
       "message.bus.send.timeout.seconds": 10,
       "request.body.size.max.mb": 5
     }
-  }
+  },
+"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/",
+"insights.file.app.path":"http://127.0.0.1:8080/repository/"
+
 }

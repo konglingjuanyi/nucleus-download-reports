@@ -1,9 +1,11 @@
 package org.gooru.nucleus.reports.download;
 
-import java.io.File;
-
 import org.gooru.nucleus.reports.downlod.service.ClassExportService;
+import org.gooru.nucleus.reports.infra.component.UtilityManager;
+import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
+import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
+import org.gooru.nucleus.reports.infra.constants.RouteConstants;
 import org.gooru.nucleus.reports.infra.util.MessageResponse;
 import org.gooru.nucleus.reports.infra.util.MessageResponseFactory;
 import org.slf4j.Logger;
@@ -22,6 +24,8 @@ public class DownloadReportVerticle extends AbstractVerticle {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DownloadReportVerticle.class);
 
 	private static final ClassExportService classExportService = ClassExportService.instance();
+	private static UtilityManager um = UtilityManager.getInstance();
+
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		EventBus eb = vertx.eventBus();
@@ -30,9 +34,23 @@ public class DownloadReportVerticle extends AbstractVerticle {
 		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
 
 			LOGGER.debug("Received message: '{}'", message.body());
+
 			vertx.executeBlocking(future -> {
-				// FIXME: Dummy implementation
-				File result =  classExportService.exportCsv("2ac95029-7f46-48e9-9f9d-1989f6610b8b", "1fe534e6-aa6a-4487-aaed-a055f46c4cb1", "20b89e9b-f673-4c5f-bfab-3f377a663be8", null, null, "unit", null);
+				String zipFileName = getZipFileName(message.body().toString());
+				LOGGER.info("zipFileName : " + zipFileName);
+				MessageResponse result = null;
+				if (!um.getCacheMemory().containsKey(zipFileName)) {
+					um.getCacheMemory().put(zipFileName, ConfigConstants.IN_PROGRESS);
+					JsonObject body = getHttpBody(message.body().toString());
+					result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
+							body.getString(RouteConstants.CLASS_ID),body.getString(RouteConstants.COURSE_ID),null,zipFileName));
+					
+				}else{
+					JsonObject resultObject = new JsonObject();
+					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
+					resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+					result = MessageResponseFactory.createOkayResponse(resultObject);
+				}
 				future.complete(result);
 			}, res -> {
 				MessageResponse result = (MessageResponse) res.result();
@@ -47,9 +65,17 @@ public class DownloadReportVerticle extends AbstractVerticle {
 
 			LOGGER.debug("Received message: '{}'", message.body());
 			vertx.executeBlocking(future -> {
-				// FIXME: Dummy implementation
-				//MessageResponse result = MessageResponseFactory.createOkayResponse(new JsonObject("" + message.body()));
-				File result =  classExportService.exportCsv("2ac95029-7f46-48e9-9f9d-1989f6610b8b", "1fe534e6-aa6a-4487-aaed-a055f46c4cb1", "20b89e9b-f673-4c5f-bfab-3f377a663be8", null, null, "unit", null);
+				JsonObject resultObject = new JsonObject();
+				String zipFileName = getZipFileName(message.body().toString());
+				LOGGER.debug("key:" + zipFileName);
+				if (um.getCacheMemory().containsKey(zipFileName)) {
+					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
+					resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+				} else {
+					resultObject.put(zipFileName, ConfigConstants.NOT_AVAILABLE);
+				}
+				LOGGER.debug("cache :" + um.getCacheMemory());
+				MessageResponse result = MessageResponseFactory.createOkayResponse(resultObject);
 				future.complete(result);
 			}, res -> {
 				MessageResponse result = (MessageResponse) res.result();
@@ -70,6 +96,22 @@ public class DownloadReportVerticle extends AbstractVerticle {
 			}
 		});
 
+	}
+
+	private String getZipFileName(String message) {
+		JsonObject body = getHttpBody(message);
+		LOGGER.info("body : " + body);
+		return body.getString(RouteConstants.CLASS_ID);
+	}
+
+	private JsonObject getHttpBody(String message) {
+		JsonObject body = null;
+		try {
+			body = new JsonObject(message).getJsonObject(MessageConstants.MSG_HTTP_BODY);
+		} catch (Exception e) {
+			LOGGER.error("unable to parse json object", e);
+		}
+		return body;
 	}
 
 	@Override

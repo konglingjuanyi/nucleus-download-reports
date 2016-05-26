@@ -8,30 +8,29 @@ import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-
+import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 
 public class CSVFileGenerator {
 	
-	@Resource(name = "filePath")
-	private Properties filePath;
-	
 	public static final String DEFAULT_FILE_NAME = "insights";
-	public static final String FILE_REAL_PATH = "insights.file.real.path";
-	public static final String FILE_APP_PATH = "insights.file.app.path";
+	private static UtilityManager um = UtilityManager.getInstance();
 	public static final String FIELDS_TO_TIME_FORMAT = "time_spent|timeSpent|totalTimespent|avgTimespent|timespent|totalTimeSpentInMs|.*Timespent.*";
 	
-	public File generateCSVReport(boolean isNewFile,String fileName, List<Map<String, Object>> resultSet) throws ParseException, IOException {
+	public File generateCSVReport(boolean isNewFile, String folderName, String fileName,
+			List<Map<String, Object>> resultSet) throws ParseException, IOException {
 
 		boolean headerColumns = false;
+		if (folderName != null) {
+			File dirs = new File(um.getFileSaveRealPath() + folderName);
+			dirs.mkdirs();
+		}
 		File csvfile = new File(setFilePath(fileName));
-		PrintStream stream = generatePrintStream(isNewFile,csvfile);
+		PrintStream stream = generatePrintStream(isNewFile, csvfile);
 		for (Map<String, Object> map : resultSet) {
-			writeToStream(map,stream,headerColumns);
+			writeToStream(map, stream, headerColumns);
 			headerColumns = true;
 		}
 		writeToFile(stream);
@@ -100,7 +99,7 @@ public class CSVFileGenerator {
 	
 	public String setFilePath(String file){
 		
-		String fileName = this.getFilePath().getProperty(FILE_REAL_PATH);
+		String fileName = um.getFileSaveRealPath();
 		if(file != null && (!file.isEmpty())){
 			fileName += file;
 		}else{
@@ -111,21 +110,13 @@ public class CSVFileGenerator {
 
 	public String getFilePath(String file){
 		
-		String fileName = this.getFilePath().getProperty(FILE_APP_PATH);
+		String fileName = um.getDownloadAppUrl();
 		if(file != null && (!file.isEmpty())){
 			fileName += file;
 		}else{
 			fileName +=DEFAULT_FILE_NAME;
 		}
 		return fileName;
-	}
-
-	public Properties getFilePath() {
-		return filePath;
-	}
-
-	public void setFilePath(Properties filePath) {
-		this.filePath = filePath;
 	}
 
 	private String convertMillisecondsToTime(long millis) {

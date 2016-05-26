@@ -17,7 +17,11 @@ public final class ConfigConstants {
     public static final String CASSANDRA_KEYSAPCE = "cassandra.keyspace";
     public static final String CASSANDRA_SEEDS = "cassandra.seeds";
     
+    public static final String FILE_DOWNLOAD_APP_URL = "insights.file.app.path";
+    public static final String FILE_SAVE_REAL_PATH = "insights.file.real.path";
+    
     public static final String DOUBLE_QUOTES = "\"";
+    public static final String SLASH = "/";
     public static final String STRING_EMPTY= "";
 	public static final String COMMA = ",";
     public static final String HYPHEN = "-";
@@ -39,7 +43,13 @@ public final class ConfigConstants {
 	public static final String DATA = "data";
 	public static final String TITLE = "title";
 	public static final String NA = "NA";
+	public static final String STATUS = "status";
+	public static final String NOT_AVAILABLE = "Not_Available";
+	public static final String IN_PROGRESS = "in-progress";
+	public static final String COMPLETED = "completed";
+	public static final String URL = "url";
 	public static final String CSV_EXT = ".csv";
+	public static final String ZIP_EXT = ".zip";
 	
     private ConfigConstants() {
         throw new AssertionError();

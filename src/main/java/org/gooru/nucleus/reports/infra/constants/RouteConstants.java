@@ -6,7 +6,7 @@ package org.gooru.nucleus.reports.infra.constants;
 public final class RouteConstants {
 
     private static final String API_VERSION = "v1";
-    private static final String API_BASE_ROUTE = "/api/nucleus-download-reports/" + API_VERSION + '/';
+    public static final String API_BASE_ROUTE = "/api/nucleus-download-reports/" + API_VERSION + '/';
     private static final String CLASS = "class";
     private static final String COURSE = "course";
     private static final char SLASH = '/';

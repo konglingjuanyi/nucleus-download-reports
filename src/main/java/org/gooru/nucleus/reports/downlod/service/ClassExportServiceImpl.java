@@ -1,12 +1,13 @@
 package org.gooru.nucleus.reports.downlod.service;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
+import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.ExportConstants;
 import org.slf4j.Logger;
@@ -16,30 +17,75 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TypeCodec;
 
+import io.vertx.core.json.JsonObject;
+
 public class ClassExportServiceImpl implements ClassExportService {
-
+	
 	CSVFileGenerator csvFileGenerator = new CSVFileGenerator();
-
+	ZipFileGenerator zipFileGenerator = new ZipFileGenerator();
 	private CqlCassandraDao cqlDAO = CqlCassandraDao.instance();
-
+	
+	private static UtilityManager um = UtilityManager.getInstance();
+	
 	protected final Logger LOG = LoggerFactory.getLogger(ClassExportServiceImpl.class);
 
 	@Override
-	public File exportCsv(String classId, String courseId, String unitId, String lessonId, String collectionId,
-			String type, String userId) {
+	public JsonObject exportCsv(String classId, String courseId, String userId, String zipFileName) {
 		try {
-
+			if (StringUtils.isBlank(zipFileName)) {
+				zipFileName = classId;
+			}
+			JsonObject result = new JsonObject();
+			LOG.info("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
+			ZipOutputStream zip = zipFileGenerator.createZipFile(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
+			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE, userId, zipFileName,zip);
+			for (String unitId : getCollectionItems(courseId)) {
+				LOG.info("	unit : " + unitId);
+				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT, userId, zipFileName,zip);
+				for (String lessonId : getCollectionItems(unitId)) {
+					LOG.info("		lesson : " + lessonId);
+					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON, userId, zipFileName, zip);
+					/*
+					 * for(String assessmentId : getCollectionItems(lessonId)){
+					 * LOG.info("			assessment : " + assessmentId);
+					 * this.export(classId, courseId,unitId, lessonId,
+					 * assessmentId, ConfigConstants.COLLECTION,
+					 * userId,zipFileName); }
+					 */
+				}
+			}
+			
+			um.getCacheMemory().put(zipFileName, ConfigConstants.COMPLETED);
+			LOG.info("CSV generation completed...........");
+			result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+			result.put(zipFileName, ConfigConstants.COMPLETED);
+			zip.closeEntry();
+			zip.close();
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	private JsonObject export(String classId, String courseId, String unitId, String lessonId, String collectionId,
+			String type, String userId, String zipFileName, ZipOutputStream zip) {
+		JsonObject result = new JsonObject();
+		try {
+			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
 			List<String> classMembersList = getClassMembersList(classId, userId);
-			List<String> collectionItemsList = getCollectionItems(getLeastId(courseId, unitId, lessonId, collectionId, type));
+			String leastId = getLeastId(courseId, unitId, lessonId, collectionId, type);
+			//String leastTitle = getContentTitle(leastId);
+			String leastTitle = "test";
+			List<String> collectionItemsList = getCollectionItems(leastId);
 
 			for (String studentId : classMembersList) {
 				Map<String, Object> dataMap = getDataMap();
 				setUserDetails(dataMap, studentId);
 				ResultSet usageDataSet = null;
 				if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
-					String rowKey = getSessionId(appendTilda(ConfigConstants.RS, classId, courseId, unitId,
-							lessonId, collectionId, studentId));
+					String rowKey = getSessionId(appendTilda(ConfigConstants.RS, classId, courseId, unitId, lessonId,
+							collectionId, studentId));
 					usageDataSet = cqlDAO.getArchievedSessionData(rowKey);
 					LOG.info("rowKey: " + rowKey);
 				}
@@ -47,8 +93,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 					String title = getContentTitle(collectionItemId);
 					if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
 						setDefaultResourceUsage(title, dataMap);
-						if(usageDataSet != null){
-							processResultSet(usageDataSet, true, ConfigConstants.RESOURCE_COLUMNS_TO_EXPORT, dataMap, title, null);
+						if (usageDataSet != null) {
+							processResultSet(usageDataSet, true, ConfigConstants.RESOURCE_COLUMNS_TO_EXPORT, dataMap,
+									title, null);
 						}
 					} else {
 						String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionItemId,
@@ -61,14 +108,16 @@ public class ClassExportServiceImpl implements ClassExportService {
 				}
 				dataList.add(dataMap);
 			}
-
-			return csvFileGenerator.generateCSVReport(true, appendHyphen(type, ConfigConstants.DATA),
-					dataList);
-
+			LOG.info("CSV generation started...........");
+			String csvName = zipFileName+ConfigConstants.SLASH+type+ConfigConstants.SLASH+appendHyphen(leastTitle, ConfigConstants.DATA);
+			String folderName = zipFileName+ConfigConstants.SLASH+type;
+			LOG.info("csvName:" + csvName);
+			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
+			zipFileGenerator.addFileInZip(csvName, zip);
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}
-		return null;
+		return result;
 	}
 
 	private String getLeastId(String courseId, String unitId, String lessonId, String collectionId, String type) {

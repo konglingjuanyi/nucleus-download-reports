@@ -18,7 +18,6 @@ public class HttpVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         LOGGER.info("Starting HttpVerticle.");
         final HttpServer httpServer = vertx.createHttpServer();
-
         // Register the routes
         final Router router = Router.router(vertx);
         configureRoutes(router);
