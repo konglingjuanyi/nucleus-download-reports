@@ -10,7 +10,7 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>nucleus-roster.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>nucleus-roster.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>nucleus-download-reports.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>
@@ -20,7 +20,7 @@
         </encoder>
     </appender>
 
-    <logger name="org.gooru.nucleus.roster" level="debug"></logger>
+    <logger name="org.gooru.nucleus.reports" level="debug"></logger>
 
 
     <root level="info">
