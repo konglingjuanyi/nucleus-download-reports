@@ -48,7 +48,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				}else{
 					JsonObject resultObject = new JsonObject();
 					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
-					resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+					resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName+ConfigConstants.ZIP_EXT);
 					result = MessageResponseFactory.createOkayResponse(resultObject);
 				}
 				future.complete(result);
