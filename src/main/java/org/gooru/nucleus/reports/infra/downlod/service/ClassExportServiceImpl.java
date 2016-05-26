@@ -57,7 +57,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			
 			um.getCacheMemory().put(zipFileName, ConfigConstants.COMPLETED);
 			LOG.info("CSV generation completed...........");
-			result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+			result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName +ConfigConstants.ZIP_EXT);
 			result.put(zipFileName, ConfigConstants.COMPLETED);
 			zip.closeEntry();
 			zip.close();
@@ -75,8 +75,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
 			List<String> classMembersList = getClassMembersList(classId, userId);
 			String leastId = getLeastId(courseId, unitId, lessonId, collectionId, type);
-			//String leastTitle = getContentTitle(leastId);
-			String leastTitle = "test";
+			String leastTitle = getContentTitle(leastId);
 			List<String> collectionItemsList = getCollectionItems(leastId);
 
 			for (String studentId : classMembersList) {
