@@ -1,4 +1,4 @@
-package org.gooru.nucleus.reports.downlod.service;
+package org.gooru.nucleus.reports.infra.downlod.service;
 
 import org.gooru.nucleus.reports.infra.component.CassandraClient;
 import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;

@@ -1,4 +1,4 @@
-package org.gooru.nucleus.reports.downlod.service;
+package org.gooru.nucleus.reports.infra.downlod.service;
 
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;

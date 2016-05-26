@@ -1,11 +1,11 @@
-package org.gooru.nucleus.reports.download;
+package org.gooru.nucleus.reports.infra.download.verticles;
 
-import org.gooru.nucleus.reports.downlod.service.ClassExportService;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.gooru.nucleus.reports.infra.constants.RouteConstants;
+import org.gooru.nucleus.reports.infra.downlod.service.ClassExportService;
 import org.gooru.nucleus.reports.infra.util.MessageResponse;
 import org.gooru.nucleus.reports.infra.util.MessageResponseFactory;
 import org.slf4j.Logger;
