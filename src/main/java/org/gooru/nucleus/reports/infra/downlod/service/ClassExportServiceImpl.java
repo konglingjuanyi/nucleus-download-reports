@@ -109,7 +109,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 				dataList.add(dataMap);
 			}
 			LOG.info("CSV generation started...........");
-			Thread.sleep(122229);
 			String csvName = zipFileName+ConfigConstants.SLASH+type+ConfigConstants.SLASH+appendHyphen(leastTitle, ConfigConstants.DATA);
 			String folderName = zipFileName+ConfigConstants.SLASH+type;
 			LOG.info("csvName:" + csvName);
