@@ -6,7 +6,7 @@
 	"cassandra.datacenter":"datacenter1",
 	"cassandra.keyspace":"event_logger_insights"
   },
-  "org.gooru.nucleus.reports.download.DownloadReportVerticle": {
+  "org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle": {
     "instances": 1,
     "worker": false,
     "config": {}
