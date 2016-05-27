@@ -11,14 +11,17 @@ public final class RouteConstants {
     private static final String COURSE = "course";
     private static final char SLASH = '/';
     private static final char COLON = ':';
-
+    private static final String DOWNLOAD = "download";
+    private static final String REQUEST = "request";
+    private static final String FILE = "download";
+    
     public static final String CLASS_ID = "classId";
     public static final String COURSE_ID = "courseId";
 
     public static final String INTERNAL_METRICS_ROUTE = API_BASE_ROUTE + "internal/metrics";
     
-    public static final String DOWNLOAD_REQUEST = API_BASE_ROUTE + CLASS + SLASH + COLON + CLASS_ID + SLASH + COURSE + SLASH + COLON + COURSE_ID + SLASH + "export";
-    public static final String DOWNLOAD_STATUS =  API_BASE_ROUTE + CLASS + SLASH + COLON + CLASS_ID + SLASH + COURSE + SLASH + COLON + COURSE_ID + SLASH + "status";
+    public static final String DOWNLOAD_REQUEST = API_BASE_ROUTE + CLASS + SLASH + COLON + CLASS_ID + SLASH + COURSE + SLASH + COLON + COURSE_ID + SLASH + DOWNLOAD + SLASH + REQUEST;
+    public static final String DOWNLOAD_FILE =  API_BASE_ROUTE + CLASS + SLASH + COLON + CLASS_ID + SLASH + COURSE + SLASH + COLON + COURSE_ID + SLASH + DOWNLOAD + SLASH + FILE;
 
     private RouteConstants() {
         throw new AssertionError();

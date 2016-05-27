@@ -40,16 +40,14 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				LOGGER.info("zipFileName : " + zipFileName);
 				MessageResponse result = null;
 				if (!um.getCacheMemory().containsKey(zipFileName)) {
-					um.getCacheMemory().put(zipFileName, ConfigConstants.IN_PROGRESS);
+					um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 					JsonObject body = getHttpBody(message.body().toString());
 					result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
 							body.getString(RouteConstants.CLASS_ID),body.getString(RouteConstants.COURSE_ID),null,zipFileName));
 					
 				}else{
 					JsonObject resultObject = new JsonObject();
-					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
-					//resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName+ConfigConstants.ZIP_EXT);
-					resultObject.put(ConfigConstants.URL, zipFileName+ConfigConstants.ZIP_EXT);
+					resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
 					result = MessageResponseFactory.createOkayResponse(resultObject);
 				}
 				future.complete(result);
