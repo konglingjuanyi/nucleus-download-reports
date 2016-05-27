@@ -33,7 +33,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 	public void configureRoutes(Vertx vertx, Router router, JsonObject config) {
 		final EventBus eb = vertx.eventBus();
 		final long mbusTimeout = config.getLong(ConfigConstants.MBUS_TIMEOUT, 30L);
-		router.get(RouteConstants.DOWNLOAD_STATUS).handler(routingContext -> {
+		router.get(RouteConstants.DOWNLOAD_REQUEST).handler(routingContext -> {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
@@ -44,7 +44,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 					reply -> new RouteResponseUtility().responseHandler(routingContext, reply, LOGGER));
 		});
 
-		router.get(RouteConstants.DOWNLOAD_REQUEST).handler(routingContext -> {
+		router.get(RouteConstants.DOWNLOAD_FILE).handler(routingContext -> {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
