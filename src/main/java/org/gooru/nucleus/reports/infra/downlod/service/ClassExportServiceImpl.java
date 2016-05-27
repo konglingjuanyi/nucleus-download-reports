@@ -55,10 +55,10 @@ public class ClassExportServiceImpl implements ClassExportService {
 				}
 			}
 			
-			um.getCacheMemory().put(zipFileName, ConfigConstants.COMPLETED);
+			um.getCacheMemory().put(zipFileName, ConfigConstants.AVAILABLE);
 			LOG.info("CSV generation completed...........");
 			//result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName +ConfigConstants.ZIP_EXT);
-			result.put(ConfigConstants.STATUS, ConfigConstants.COMPLETED);
+			result.put(ConfigConstants.STATUS, ConfigConstants.AVAILABLE);
 			zip.closeEntry();
 			zip.close();
 			return result;

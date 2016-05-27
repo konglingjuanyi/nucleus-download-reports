@@ -46,7 +46,7 @@ public final class ConfigConstants {
 	public static final String STATUS = "status";
 	public static final String NOT_AVAILABLE = "Not_Available";
 	public static final String IN_PROGRESS = "in-progress";
-	public static final String COMPLETED = "completed";
+	public static final String AVAILABLE = "available";
 	public static final String URL = "url";
 	public static final String CSV_EXT = ".csv";
 	public static final String ZIP_EXT = ".zip";
