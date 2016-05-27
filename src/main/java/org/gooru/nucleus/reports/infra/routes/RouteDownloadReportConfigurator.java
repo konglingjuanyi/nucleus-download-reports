@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.gooru.nucleus.reports.infra.constants.RouteConstants;
@@ -26,9 +27,10 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RouteDownloadReportConfigurator.class);
 
+	private static UtilityManager um = UtilityManager.getInstance();
+
 	@Override
 	public void configureRoutes(Vertx vertx, Router router, JsonObject config) {
-
 		final EventBus eb = vertx.eventBus();
 		final long mbusTimeout = config.getLong(ConfigConstants.MBUS_TIMEOUT, 30L);
 		router.get(RouteConstants.DOWNLOAD_STATUS).handler(routingContext -> {
@@ -38,7 +40,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
 			routingContext.response().putHeader("content-type", "application/json; charset=utf-8");
 			JsonObject rru = new RouteRequestUtility().getBodyForMessage(routingContext);
-			eb.send(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST_STATUS, rru, options,
+			eb.send(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, rru, options,
 					reply -> new RouteResponseUtility().responseHandler(routingContext, reply, LOGGER));
 		});
 
@@ -46,12 +48,10 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
-			DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
-			routingContext.response().putHeader("content-type", "application/csv");
-			routingContext.response().sendFile(classId+ConfigConstants.ZIP_EXT);
-			JsonObject rru = new RouteRequestUtility().getBodyForMessage(routingContext);
-			eb.send(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, rru, options,
-					reply -> new RouteResponseUtility().responseHandler(routingContext, reply, LOGGER));
+			File f = new File(um.getFileSaveRealPath() + classId + ConfigConstants.ZIP_EXT);
+			routingContext.response().putHeader("content-type", "application/zip");
+			routingContext.response().putHeader("Content-Disposition", "attachment; filename=\""+f.getName()+"\"");
+			routingContext.response().setStatusCode(200);
 		});
 
 	}
