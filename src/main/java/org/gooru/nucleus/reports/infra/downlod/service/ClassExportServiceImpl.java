@@ -57,7 +57,8 @@ public class ClassExportServiceImpl implements ClassExportService {
 			
 			um.getCacheMemory().put(zipFileName, ConfigConstants.COMPLETED);
 			LOG.info("CSV generation completed...........");
-			result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName +ConfigConstants.ZIP_EXT);
+			//result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName +ConfigConstants.ZIP_EXT);
+			result.put(ConfigConstants.URL, zipFileName +ConfigConstants.ZIP_EXT);
 			result.put(zipFileName, ConfigConstants.COMPLETED);
 			zip.closeEntry();
 			zip.close();
@@ -76,6 +77,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			List<String> classMembersList = getClassMembersList(classId, userId);
 			String leastId = getLeastId(courseId, unitId, lessonId, collectionId, type);
 			String leastTitle = getContentTitle(leastId);
+			LOG.info("leastId : " + leastId + " - leastTitle:" + leastTitle);
 			List<String> collectionItemsList = getCollectionItems(leastId);
 
 			for (String studentId : classMembersList) {
@@ -86,7 +88,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 					String rowKey = getSessionId(appendTilda(ConfigConstants.RS, classId, courseId, unitId, lessonId,
 							collectionId, studentId));
 					usageDataSet = cqlDAO.getArchievedSessionData(rowKey);
-					LOG.info("rowKey: " + rowKey);
 				}
 				for (String collectionItemId : collectionItemsList) {
 					String title = getContentTitle(collectionItemId);
@@ -99,7 +100,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 					} else {
 						String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionItemId,
 								studentId);
-						LOG.info("usageRowKey: " + usageRowKey);
 						setDefaultUsage(title, dataMap);
 						setUsageData(dataMap, title, usageRowKey, ConfigConstants.COLLECTION);
 						setUsageData(dataMap, title, usageRowKey, ConfigConstants.ASSESSMENT);

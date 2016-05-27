@@ -1,7 +1,11 @@
 package org.gooru.nucleus.reports.infra.routes;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
-import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.gooru.nucleus.reports.infra.constants.RouteConstants;
 import org.gooru.nucleus.reports.infra.routes.util.RouteRequestUtility;
@@ -43,7 +47,8 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
 			DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
-			routingContext.response().putHeader("content-type", "application/json; charset=utf-8");
+			routingContext.response().putHeader("content-type", "application/csv");
+			routingContext.response().sendFile(classId+ConfigConstants.ZIP_EXT);
 			JsonObject rru = new RouteRequestUtility().getBodyForMessage(routingContext);
 			eb.send(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, rru, options,
 					reply -> new RouteResponseUtility().responseHandler(routingContext, reply, LOGGER));
