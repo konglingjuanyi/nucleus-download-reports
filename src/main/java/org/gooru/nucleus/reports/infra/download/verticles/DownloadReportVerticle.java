@@ -48,7 +48,8 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				}else{
 					JsonObject resultObject = new JsonObject();
 					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
-					resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName+ConfigConstants.ZIP_EXT);
+					//resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName+ConfigConstants.ZIP_EXT);
+					resultObject.put(ConfigConstants.URL, zipFileName+ConfigConstants.ZIP_EXT);
 					result = MessageResponseFactory.createOkayResponse(resultObject);
 				}
 				future.complete(result);
@@ -70,7 +71,8 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				LOGGER.debug("key:" + zipFileName);
 				if (um.getCacheMemory().containsKey(zipFileName)) {
 					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
-					resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+					//resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
+					resultObject.put(ConfigConstants.URL, zipFileName);
 				} else {
 					resultObject.put(zipFileName, ConfigConstants.NOT_AVAILABLE);
 				}
