@@ -29,8 +29,8 @@ public class DownloadReportVerticle extends AbstractVerticle {
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		EventBus eb = vertx.eventBus();
+	
 		MessageConsumer<Object> status = null;
-
 		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
 
 			LOGGER.debug("Received message: '{}'", message.body());

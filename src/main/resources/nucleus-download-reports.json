@@ -1,27 +1,27 @@
 {
   "comment": "This is bundled JSON file. Idea is that we should externalize this also as part of build. Currently this is going to hold the dev env information",
   "defaultDataSource": {
-    	"cassandra.seeds":"127.0.0.1",
+    	"cassandra.seeds":"184.72.16.135",
 	"cassandra.cluster":"archive",
 	"cassandra.datacenter":"datacenter1",
-	"cassandra.keyspace":"event_logger_insights"
+	"cassandra.keyspace":"insights_qa"
   },
-  "org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle": {
+"org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle": {
     "instances": 1,
     "worker": false,
-    "config": {}
-  },
+    "config": { 
+	"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
+  }},
   "org.gooru.nucleus.reports.infra.server.HttpVerticle": {
     "instances": 1,
     "worker": false,
     "config": {
-      "http.port": 8081,
+      "http.port": 8080,
       "metrics.periodicity.seconds": 300,
       "message.bus.send.timeout.seconds": 10,
-      "request.body.size.max.mb": 5
+      "request.body.size.max.mb": 5,
+      "insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
     }
   },
 "insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/",
-"insights.file.app.path":"http://127.0.0.1:8080/repository/"
-
 }
