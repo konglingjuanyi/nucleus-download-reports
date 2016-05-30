@@ -42,12 +42,19 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
-			Buffer zipFile = vertx.fileSystem().readFileBlocking(config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId + ConfigConstants.ZIP_EXT);
-			routingContext.response().putHeader("Content-Length",""+zipFile.length());
-			routingContext.response().putHeader("content-type", "application/zip");
-			routingContext.response().putHeader("Content-Disposition", "attachment; filename=\""+classId + ConfigConstants.ZIP_EXT+"\"");
-			routingContext.response().write(zipFile);
-			routingContext.response().setStatusCode(200);
+			try {
+				Buffer zipFile = vertx.fileSystem().readFileBlocking(
+						config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId + ConfigConstants.ZIP_EXT);
+				routingContext.response().putHeader("Content-Length", "" + zipFile.length());
+				routingContext.response().putHeader("content-type", "application/zip");
+				routingContext.response().putHeader("Content-Disposition",
+						"attachment; filename=\"" + classId + ConfigConstants.ZIP_EXT + "\"");
+				routingContext.response().write(zipFile);
+				routingContext.response().setStatusCode(200);
+			}catch(Exception e){
+				routingContext.response().setStatusCode(404);
+				LOGGER.error("Exception ", e);
+			}
 			routingContext.response().end();
 		});
 

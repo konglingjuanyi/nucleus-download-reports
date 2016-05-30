@@ -1,5 +1,6 @@
 package org.gooru.nucleus.reports.infra.downlod.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -111,7 +112,10 @@ public class ClassExportServiceImpl implements ClassExportService {
 			String folderName = zipFileName+ConfigConstants.SLASH+type;
 			LOG.info("csvName:" + csvName);
 			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
-			zipFileGenerator.addFileInZip(csvName, zip);
+			zipFileGenerator.addFileInZip(csvName+ConfigConstants.CSV_EXT, zip);
+			//delete original folder
+			File folder = new File(um.getFileSaveRealPath()+folderName);
+			folder.deleteOnExit();
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}
