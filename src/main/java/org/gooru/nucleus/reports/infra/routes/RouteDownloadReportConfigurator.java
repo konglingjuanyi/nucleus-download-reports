@@ -1,10 +1,5 @@
 package org.gooru.nucleus.reports.infra.routes;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
@@ -27,9 +22,7 @@ import io.vertx.ext.web.Router;
 final class RouteDownloadReportConfigurator implements RouteConfigurator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RouteDownloadReportConfigurator.class);
-
-	private static UtilityManager um = UtilityManager.getInstance();
-
+	
 	@Override
 	public void configureRoutes(Vertx vertx, Router router, JsonObject config) {
 		final EventBus eb = vertx.eventBus();
@@ -49,11 +42,11 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
-			Buffer ff = vertx.fileSystem().readFileBlocking("/home/daniel/workspace/insights-api-3.0.1/reports/" + classId + ConfigConstants.ZIP_EXT);
-			routingContext.response().putHeader("Content-Length",""+ff.length());
+			Buffer zipFile = vertx.fileSystem().readFileBlocking(config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId + ConfigConstants.ZIP_EXT);
+			routingContext.response().putHeader("Content-Length",""+zipFile.length());
 			routingContext.response().putHeader("content-type", "application/zip");
 			routingContext.response().putHeader("Content-Disposition", "attachment; filename=\""+classId + ConfigConstants.ZIP_EXT+"\"");
-			routingContext.response().write(ff);
+			routingContext.response().write(zipFile);
 			routingContext.response().setStatusCode(200);
 			routingContext.response().end();
 		});
