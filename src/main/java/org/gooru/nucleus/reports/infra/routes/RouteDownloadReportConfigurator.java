@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
@@ -48,10 +49,13 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId);
-			File f = new File(um.getFileSaveRealPath() + classId + ConfigConstants.ZIP_EXT);
+			Buffer ff = vertx.fileSystem().readFileBlocking("/home/daniel/workspace/insights-api-3.0.1/reports/" + classId + ConfigConstants.ZIP_EXT);
+			routingContext.response().putHeader("Content-Length",""+ff.length());
 			routingContext.response().putHeader("content-type", "application/zip");
-			routingContext.response().putHeader("Content-Disposition", "attachment; filename=\""+f.getName()+"\"");
+			routingContext.response().putHeader("Content-Disposition", "attachment; filename=\""+classId + ConfigConstants.ZIP_EXT+"\"");
+			routingContext.response().write(ff);
 			routingContext.response().setStatusCode(200);
+			routingContext.response().end();
 		});
 
 	}

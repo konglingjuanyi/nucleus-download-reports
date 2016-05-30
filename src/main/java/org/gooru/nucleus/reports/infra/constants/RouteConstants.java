@@ -13,7 +13,7 @@ public final class RouteConstants {
     private static final char COLON = ':';
     private static final String DOWNLOAD = "download";
     private static final String REQUEST = "request";
-    private static final String FILE = "download";
+    private static final String FILE = "file";
     
     public static final String CLASS_ID = "classId";
     public static final String COURSE_ID = "courseId";
