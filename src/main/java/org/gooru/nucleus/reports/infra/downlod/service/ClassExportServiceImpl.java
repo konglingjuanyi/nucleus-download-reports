@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.cassandra.io.util.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
@@ -114,8 +115,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
 			zipFileGenerator.addFileInZip(csvName+ConfigConstants.CSV_EXT, zip);
 			//delete original folder
-			File folder = new File(um.getFileSaveRealPath()+folderName);
-			folder.deleteOnExit();
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}

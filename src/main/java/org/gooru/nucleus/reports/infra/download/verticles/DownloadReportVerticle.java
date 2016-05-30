@@ -44,7 +44,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 					JsonObject body = getHttpBody(message.body().toString());
 					result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
 							body.getString(RouteConstants.CLASS_ID),body.getString(RouteConstants.COURSE_ID),null,zipFileName));
-					
+					vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)+ConfigConstants.SLASH+ zipFileName);
 				}else{
 					JsonObject resultObject = new JsonObject();
 					resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
@@ -103,7 +103,6 @@ public class DownloadReportVerticle extends AbstractVerticle {
 		LOGGER.info("body : " + body);
 		return body.getString(RouteConstants.CLASS_ID);
 	}
-
 	private JsonObject getHttpBody(String message) {
 		JsonObject body = null;
 		try {
