@@ -42,17 +42,16 @@ public class ClassExportServiceImpl implements ClassExportService {
 			JsonObject result = new JsonObject();
 			LOG.info("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
 			List<String> classMembersList = getClassMembersList(classId, userId);
-			ZipOutputStream zip = zipFileGenerator.createZipFile(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
 			String courseTitle = getContentTitle(courseId);
-			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName,zip);
+			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName);
 			for (String unitId : getCollectionItems(courseId)) {
 				String unitTitle = getContentTitle(unitId);
 				LOG.info("unit : " + unitTitle);
-				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT,courseTitle,unitTitle,null,null, classMembersList, zipFileName,zip);
+				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT,courseTitle,unitTitle,null,null, classMembersList, zipFileName);
 				for (String lessonId : getCollectionItems(unitId)) {
 					String lessonTitle = getContentTitle(lessonId);
 					LOG.info("lesson : " + lessonTitle);
-					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON,courseTitle,unitTitle,lessonTitle,null, classMembersList, zipFileName, zip);
+					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON,courseTitle,unitTitle,lessonTitle,null, classMembersList, zipFileName);
 					/*
 					 * for(String assessmentId : getCollectionItems(lessonId)){
 					 * LOG.info("			assessment : " + assessmentId);
@@ -67,8 +66,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			LOG.info("CSV generation completed...........");
 			//result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName +ConfigConstants.ZIP_EXT);
 			result.put(ConfigConstants.STATUS, ConfigConstants.AVAILABLE);
-			zip.closeEntry();
-			zip.close();
+			
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +74,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 		return null;
 	}
 	private JsonObject export(String classId, String courseId, String unitId, String lessonId, String collectionId,
-			String type, String courseTitle,String unitTitle, String lessonTitle, String assessmentTitle,List<String> classMembersList, String zipFileName, ZipOutputStream zip) {
+			String type, String courseTitle,String unitTitle, String lessonTitle, String assessmentTitle,List<String> classMembersList, String zipFileName) {
 		JsonObject result = new JsonObject();
 		try {
 			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
@@ -99,7 +97,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			String folderName =  appendSlash(zipFileName,courseTitle,unitTitle, lessonTitle, assessmentTitle);
 			LOG.info("csvName:" + csvName);
 			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
-			zipFileGenerator.addFileInZip(csvName+ConfigConstants.CSV_EXT, zip);
+			zipFileGenerator.zipDir(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT, (um.getFileSaveRealPath() + zipFileName));
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}
