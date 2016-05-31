@@ -7,10 +7,16 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.gooru.nucleus.reports.infra.component.UtilityManager;
+import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
+
 public class ZipFileGenerator {
+	private static UtilityManager um = UtilityManager.getInstance();
+
 	public void zipDir(String zipFileName, String directoryName) throws Exception {
 		File dirObj = new File(directoryName);
-		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFileName));
+		File f = new File(zipFileName);
+		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(f));
 		System.out.println("Creating : " + zipFileName);
 		addDir(dirObj, out);
 		out.close();
@@ -35,5 +41,16 @@ public class ZipFileGenerator {
 			out.closeEntry();
 			in.close();
 		}
+	}
+	
+	private String setFilePath(String file){
+		
+		String fileName = um.getFileSaveRealPath();
+		if(file != null && (!file.isEmpty())){
+			fileName += file;
+		}else{
+			fileName +=DEFAULT_FILE_NAME;
+		}
+		return fileName+ConfigConstants.CSV_EXT;
 	}
 }
