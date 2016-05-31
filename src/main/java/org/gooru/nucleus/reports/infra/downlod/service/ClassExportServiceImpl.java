@@ -42,15 +42,17 @@ public class ClassExportServiceImpl implements ClassExportService {
 			JsonObject result = new JsonObject();
 			LOG.info("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
 			List<String> classMembersList = getClassMembersList(classId, userId);
-
 			ZipOutputStream zip = zipFileGenerator.createZipFile(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
-			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE, classMembersList, zipFileName,zip);
+			String courseTitle = getContentTitle(courseId);
+			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName,zip);
 			for (String unitId : getCollectionItems(courseId)) {
 				LOG.info("	unit : " + unitId);
-				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT, classMembersList, zipFileName,zip);
+				String unitTitle = getContentTitle(courseId);
+				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT,courseTitle,unitTitle,null,null, classMembersList, zipFileName,zip);
 				for (String lessonId : getCollectionItems(unitId)) {
 					LOG.info("		lesson : " + lessonId);
-					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON, classMembersList, zipFileName, zip);
+					String lessonTitle = getContentTitle(courseId);
+					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON,courseTitle,unitTitle,lessonTitle,null, classMembersList, zipFileName, zip);
 					/*
 					 * for(String assessmentId : getCollectionItems(lessonId)){
 					 * LOG.info("			assessment : " + assessmentId);
@@ -74,28 +76,27 @@ public class ClassExportServiceImpl implements ClassExportService {
 		return null;
 	}
 	private JsonObject export(String classId, String courseId, String unitId, String lessonId, String collectionId,
-			String type, List<String> classMembersList, String zipFileName, ZipOutputStream zip) {
+			String type, String courseTitle,String unitTitle, String lessonTitle, String assessmentTitle,List<String> classMembersList, String zipFileName, ZipOutputStream zip) {
 		JsonObject result = new JsonObject();
 		try {
 			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
-			String leastId = getLeastId(courseId, unitId, lessonId, collectionId, type);
-			String leastTitle = getContentTitle(leastId);
-			LOG.info("leastId : " + leastId + " - leastTitle:" + leastTitle);
+			
 			
 			for (String studentId : classMembersList) {
 				Map<String, Object> dataMap = getDataMap();
 				setUserDetails(dataMap, studentId);
 				String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionId, studentId);
-				LOG.info("usageRowKey");
+				LOG.info("usageRowKey" + usageRowKey);
+				String leastTitle = getLeastTitle(courseTitle, unitTitle, lessonTitle, assessmentTitle, type);
 				setDefaultUsage(leastTitle, dataMap);
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.COLLECTION);
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.ASSESSMENT);
 				dataList.add(dataMap);
 			}
 			LOG.info("CSV generation started...........");
-			String csvName = zipFileName+ConfigConstants.SLASH+leastTitle+ConfigConstants.SLASH+ConfigConstants.DATA;
-			String folderName = zipFileName+ConfigConstants.SLASH+leastTitle;
+			String csvName = appendSlash(zipFileName,courseTitle,unitTitle, lessonTitle, assessmentTitle,ConfigConstants.DATA);
+			String folderName =  appendSlash(zipFileName,courseTitle,unitTitle, lessonTitle, assessmentTitle);
 			LOG.info("csvName:" + csvName);
 			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
 			zipFileGenerator.addFileInZip(csvName+ConfigConstants.CSV_EXT, zip);
@@ -105,18 +106,18 @@ public class ClassExportServiceImpl implements ClassExportService {
 		return result;
 	}
 
-	private String getLeastId(String courseId, String unitId, String lessonId, String collectionId, String type) {
-		String leastId = courseId;
+	private String getLeastTitle(String courseTitle, String unitTitle, String lessonTitle, String collectionTitle, String type) {
+		String title = courseTitle;
 		if (type.equalsIgnoreCase(ConfigConstants.COURSE)) {
-			leastId = courseId;
+			title = courseTitle;
 		} else if (type.equalsIgnoreCase(ConfigConstants.UNIT)) {
-			leastId = unitId;
+			title = unitTitle;
 		} else if (type.equalsIgnoreCase(ConfigConstants.LESSON)) {
-			leastId = lessonId;
+			title = unitTitle;
 		} else if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
-			leastId = collectionId;
+			title = lessonTitle;
 		}
-		return leastId;
+		return title;
 	}
 
 	private List<String> getClassMembersList(String classId, String userId) {
@@ -212,6 +213,18 @@ public class ClassExportServiceImpl implements ClassExportService {
 			if (StringUtils.isNotBlank(text)) {
 				if (sb.length() > 0) {
 					sb.append(ConfigConstants.TILDA);
+				}
+				sb.append(text);
+			}
+		}
+		return sb.toString();
+	}
+	private String appendSlash(String... texts) {
+		StringBuffer sb = new StringBuffer();
+		for (String text : texts) {
+			if (StringUtils.isNotBlank(text)) {
+				if (sb.length() > 0) {
+					sb.append(ConfigConstants.SLASH);
 				}
 				sb.append(text);
 			}

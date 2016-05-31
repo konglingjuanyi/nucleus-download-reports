@@ -23,7 +23,7 @@ import com.netflix.astyanax.serializers.StringSerializer;
 public class CqlCassandraDaoImpl implements CqlCassandraDao {
 
 	private final ConsistencyLevel DEFAULT_CONSISTENCY_LEVEL = ConsistencyLevel.QUORUM;
-	private final com.netflix.astyanax.model.ConsistencyLevel CONSISTENCY_LEVEL = com.netflix.astyanax.model.ConsistencyLevel.CL_EACH_QUORUM;
+	private final com.netflix.astyanax.model.ConsistencyLevel CONSISTENCY_LEVEL = com.netflix.astyanax.model.ConsistencyLevel.CL_QUORUM;
 	
 	private static final Logger LOG = LoggerFactory.getLogger(CqlCassandraDaoImpl.class);		
 	
