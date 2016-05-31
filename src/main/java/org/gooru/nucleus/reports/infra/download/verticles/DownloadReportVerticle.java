@@ -36,26 +36,25 @@ public class DownloadReportVerticle extends AbstractVerticle {
 			vertx.executeBlocking(future -> {
 				String zipFileName = getZipFileName(message.body().toString());
 				LOGGER.info("zipFileName : " + zipFileName);
-				MessageResponse result = null;
+				JsonObject result = null;
 				if (!um.getCacheMemory().containsKey(zipFileName)) {
 					um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 					JsonObject body = getHttpBody(message.body().toString());
-					result = MessageResponseFactory
-							.createOkayResponse(classExportService.exportCsv(body.getString(RouteConstants.CLASS_ID),
-									body.getString(RouteConstants.COURSE_ID), null, zipFileName));
-					vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
-							+ ConfigConstants.SLASH + zipFileName);
+					result =classExportService.exportCsv(body.getString(RouteConstants.CLASS_ID),
+									body.getString(RouteConstants.COURSE_ID), null, zipFileName);
+					//delete folder
+					/*vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
+							+ ConfigConstants.SLASH + zipFileName);*/
 				} else {
-					JsonObject resultObject = new JsonObject();
-					resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
-					result = MessageResponseFactory.createOkayResponse(resultObject);
+					result = new JsonObject();
+					result.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
 				}
 				future.complete(result);
 			}, res -> {
-				MessageResponse result = (MessageResponse) res.result();
+				/*MessageResponse result = (MessageResponse) res.result();
 				LOGGER.debug("Sending response: '{}'", result.reply());
-				message.reply(result.reply(), result.deliveryOptions());
-
+				message.reply(result.reply(), result.deliveryOptions());*/
+				message.reply(res);
 			});
 
 		});
