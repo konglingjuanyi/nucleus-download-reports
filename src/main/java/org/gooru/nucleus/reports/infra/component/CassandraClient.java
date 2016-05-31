@@ -16,6 +16,14 @@ import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.ExponentialReconnectionPolicy;
+import com.netflix.astyanax.AstyanaxContext;
+import com.netflix.astyanax.Keyspace;
+import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
+import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
+import com.netflix.astyanax.connectionpool.impl.ConnectionPoolType;
+import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
+import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
+import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -32,7 +40,8 @@ public final class CassandraClient implements Initializer, Finalizer {
 	private Map<String, String> keySpace = new HashMap<String, String>();
 	private ProtocolVersion protocolVersion;
 	private volatile boolean initialized;
-
+	private Keyspace keyspace;
+	
 	private CassandraClient() {
 		// TODO Auto-generated constructor stub
 	}
@@ -104,9 +113,11 @@ public final class CassandraClient implements Initializer, Finalizer {
 		return keySpace.get(ConfigConstants.ARCHIVE);
 	}
 
+	public Keyspace getKeyspace() {
+		return keyspace;
+	}
 	private Session initializeDataSource(JsonObject dbConfig) {
-		// The default DS provider is hikari, so if set explicitly or not set
-		// use it, else error out
+		
 		Cluster archiveCassandraCluster = Cluster.builder()
 				.withClusterName(dbConfig.getString(ConfigConstants.CASSANDRA_CLUSTER))
 				.addContactPoint(dbConfig.getString(ConfigConstants.CASSANDRA_SEEDS))
@@ -114,9 +125,27 @@ public final class CassandraClient implements Initializer, Finalizer {
 				.withReconnectionPolicy(new ExponentialReconnectionPolicy(1000, 30000)).build();
 		Session session = archiveCassandraCluster.connect(dbConfig.getString(ConfigConstants.CASSANDRA_KEYSAPCE));
 		protocolVersion = archiveCassandraCluster.getConfiguration().getProtocolOptions().getProtocolVersion();
+		initCassandra(dbConfig);
 		return session;
 	}
 
+	private void initCassandra(JsonObject dbConfig){
+		try {
+			LOGGER.info("Loading cassandra connection properties");
+			ConnectionPoolConfigurationImpl poolConfig = new ConnectionPoolConfigurationImpl("MyConnectionPool").setPort(9160).setSeeds(dbConfig.getString(ConfigConstants.CASSANDRA_SEEDS)).setSocketTimeout(30000).setMaxTimeoutWhenExhausted(2000)
+					.setMaxConnsPerHost(10).setInitConnsPerHost(1);
+				poolConfig.setLocalDatacenter(dbConfig.getString(ConfigConstants.CASSANDRA_DATACENTER));
+
+			AstyanaxContext<Keyspace> logContext = new AstyanaxContext.Builder().forCluster(dbConfig.getString(ConfigConstants.CASSANDRA_CLUSTER)).forKeyspace(dbConfig.getString(ConfigConstants.CASSANDRA_KEYSAPCE))
+					.withAstyanaxConfiguration(new AstyanaxConfigurationImpl().setTargetCassandraVersion("2.1.4").setCqlVersion("3.0.0").setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE).setConnectionPoolType(ConnectionPoolType.ROUND_ROBIN))
+					.withConnectionPoolConfiguration(poolConfig).withConnectionPoolMonitor(new CountingConnectionPoolMonitor()).buildKeyspace(ThriftFamilyFactory.getInstance());
+			logContext.start();
+			keyspace = (Keyspace) logContext.getClient();
+			LOGGER.info("Initialized connection to " + dbConfig.getString(ConfigConstants.CASSANDRA_KEYSAPCE) + " keyspace");
+		} catch (Exception e) {
+			LOGGER.error("Error while initializing cassandra : {}", e);
+		}
+	}
 	@Override
 	public void finalizeComponent() {
 		for (String datasource : CassandraProperties) {

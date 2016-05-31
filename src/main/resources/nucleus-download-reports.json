@@ -12,16 +12,21 @@
     "config": { 
 	"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
   }},
-  "org.gooru.nucleus.reports.infra.server.HttpVerticle": {
+  "org.gooru.nucleus.reports.infra.download.verticles.HttpVerticle": {
     "instances": 1,
     "worker": false,
     "config": {
       "http.port": 8080,
-      "metrics.periodicity.seconds": 300,
-      "message.bus.send.timeout.seconds": 10,
+      "metrics.periodicity.seconds": 600,
+      "message.bus.send.timeout.seconds": 600,
       "request.body.size.max.mb": 5,
       "insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
     }
   },
-"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/",
+"org.gooru.nucleus.reports.infra.download.verticles.AuthVerticle": {
+    "instances": 1,
+    "worker": false,
+    "config": {
+  }},
+"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
 }

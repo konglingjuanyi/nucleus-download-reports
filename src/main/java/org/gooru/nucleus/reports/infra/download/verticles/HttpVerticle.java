@@ -1,4 +1,4 @@
-package org.gooru.nucleus.reports.infra.server;
+package org.gooru.nucleus.reports.infra.download.verticles;
 
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.routes.RouteConfiguration;

@@ -1,15 +1,15 @@
 package org.gooru.nucleus.reports.infra.downlod.service;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.cassandra.io.util.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
+import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.ExportConstants;
 import org.slf4j.Logger;
@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TypeCodec;
+import com.netflix.astyanax.model.Column;
+import com.netflix.astyanax.model.ColumnList;
 
 import io.vertx.core.json.JsonObject;
 
@@ -39,14 +41,16 @@ public class ClassExportServiceImpl implements ClassExportService {
 			}
 			JsonObject result = new JsonObject();
 			LOG.info("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
+			List<String> classMembersList = getClassMembersList(classId, userId);
+
 			ZipOutputStream zip = zipFileGenerator.createZipFile(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
-			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE, userId, zipFileName,zip);
+			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE, classMembersList, zipFileName,zip);
 			for (String unitId : getCollectionItems(courseId)) {
 				LOG.info("	unit : " + unitId);
-				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT, userId, zipFileName,zip);
+				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT, classMembersList, zipFileName,zip);
 				for (String lessonId : getCollectionItems(unitId)) {
 					LOG.info("		lesson : " + lessonId);
-					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON, userId, zipFileName, zip);
+					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON, classMembersList, zipFileName, zip);
 					/*
 					 * for(String assessmentId : getCollectionItems(lessonId)){
 					 * LOG.info("			assessment : " + assessmentId);
@@ -70,51 +74,31 @@ public class ClassExportServiceImpl implements ClassExportService {
 		return null;
 	}
 	private JsonObject export(String classId, String courseId, String unitId, String lessonId, String collectionId,
-			String type, String userId, String zipFileName, ZipOutputStream zip) {
+			String type, List<String> classMembersList, String zipFileName, ZipOutputStream zip) {
 		JsonObject result = new JsonObject();
 		try {
 			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
-			List<String> classMembersList = getClassMembersList(classId, userId);
 			String leastId = getLeastId(courseId, unitId, lessonId, collectionId, type);
 			String leastTitle = getContentTitle(leastId);
 			LOG.info("leastId : " + leastId + " - leastTitle:" + leastTitle);
-			List<String> collectionItemsList = getCollectionItems(leastId);
-
+			
 			for (String studentId : classMembersList) {
 				Map<String, Object> dataMap = getDataMap();
 				setUserDetails(dataMap, studentId);
-				ResultSet usageDataSet = null;
-				if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
-					String rowKey = getSessionId(appendTilda(ConfigConstants.RS, classId, courseId, unitId, lessonId,
-							collectionId, studentId));
-					usageDataSet = cqlDAO.getArchievedSessionData(rowKey);
-				}
-				for (String collectionItemId : collectionItemsList) {
-					String title = getContentTitle(collectionItemId);
-					if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
-						setDefaultResourceUsage(title, dataMap);
-						if (usageDataSet != null) {
-							processResultSet(usageDataSet, true, ConfigConstants.RESOURCE_COLUMNS_TO_EXPORT, dataMap,
-									title, null);
-						}
-					} else {
-						String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionItemId,
-								studentId);
-						setDefaultUsage(title, dataMap);
-						setUsageData(dataMap, title, usageRowKey, ConfigConstants.COLLECTION);
-						setUsageData(dataMap, title, usageRowKey, ConfigConstants.ASSESSMENT);
-					}
-				}
+				String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionId, studentId);
+				LOG.info("usageRowKey");
+				setDefaultUsage(leastTitle, dataMap);
+				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.COLLECTION);
+				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.ASSESSMENT);
 				dataList.add(dataMap);
 			}
 			LOG.info("CSV generation started...........");
-			String csvName = zipFileName+ConfigConstants.SLASH+type+ConfigConstants.SLASH+appendHyphen(leastTitle, ConfigConstants.DATA);
-			String folderName = zipFileName+ConfigConstants.SLASH+type;
+			String csvName = zipFileName+ConfigConstants.SLASH+leastTitle+ConfigConstants.SLASH+ConfigConstants.DATA;
+			String folderName = zipFileName+ConfigConstants.SLASH+leastTitle;
 			LOG.info("csvName:" + csvName);
 			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
 			zipFileGenerator.addFileInZip(csvName+ConfigConstants.CSV_EXT, zip);
-			//delete original folder
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}
@@ -148,9 +132,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 
 	private List<String> getCollectionItems(String contentId) {
 		List<String> collectionItems = new ArrayList<String>();
-		ResultSet collectionItemSet = cqlDAO.getArchievedCollectionItem(contentId);
-		for (Row collectionItemRow : collectionItemSet) {
-			collectionItems.add(collectionItemRow.getString(ConfigConstants.COLUMN_1));
+		ColumnList<String> collectionItemSet = cqlDAO.readByKey(ColumnFamilyConstants.COLLECTION_ITEM_ASSOC, contentId);
+		for (Column<String> column : collectionItemSet) {
+			collectionItems.add(column.getName());
 		}
 		return collectionItems;
 	}
@@ -165,20 +149,17 @@ public class ClassExportServiceImpl implements ClassExportService {
 	}
 
 	private void setUserDetails(Map<String, Object> dataMap, String userId) {
-		ResultSet userDetailSet = cqlDAO.getArchievedUserDetails(userId);
-		for (Row userDetailRow : userDetailSet) {
-			dataMap.put(ExportConstants.FIRST_NAME, userDetailRow.getString("firstname"));
-			dataMap.put(ExportConstants.LAST_NAME, userDetailRow.getString("lastname"));
-		}
+		ColumnList<String> userDetailSet = cqlDAO.readByKey(ColumnFamilyConstants.USER, userId);
+		dataMap.put(ExportConstants.FIRST_NAME,
+				userDetailSet.getStringValue("firstname", ConfigConstants.STRING_EMPTY));
+		dataMap.put(ExportConstants.LAST_NAME, userDetailSet.getStringValue("lastname", ConfigConstants.STRING_EMPTY));
 	}
 
 	private String getContentTitle(String contentId) {
-		String title = "";
-		ResultSet contentDetails = cqlDAO.getArchievedContentTitle(contentId);
-		for (Row contentDetailRow : contentDetails) {
-			title = contentDetailRow.getString(ConfigConstants.TITLE);
-		}
-		return title;
+		Collection<String> resourceColumns = new ArrayList<String>();
+		resourceColumns.add(ConfigConstants.TITLE);
+		ColumnList<String> contentDetails = cqlDAO.read(ColumnFamilyConstants.RESOURCE, contentId, resourceColumns);
+		return contentDetails.getStringValue(ConfigConstants.TITLE, ConfigConstants.STRING_EMPTY);
 	}
 
 	private String getSessionId(String rowKey) {
@@ -194,26 +175,14 @@ public class ClassExportServiceImpl implements ClassExportService {
 	private void setUsageData(Map<String, Object> dataMap, String title, String rowKey, String collectionType) {
 		String columnNames = ConfigConstants.COLUMNS_TO_EXPORT;;
 		boolean splitColumnName = false;
-		ResultSet usageDataSet = cqlDAO.getArchievedClassData(appendTilda(rowKey, collectionType));
+		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,appendTilda(rowKey, collectionType));
 		processResultSet(usageDataSet, splitColumnName, columnNames, dataMap, title, collectionType);
 	}
 
-	private void processResultSet(ResultSet usageDataSet, boolean splitColumnName, String columnNames,Map<String, Object> dataMap, String title, String collectionType){
-		for (Row usageDataRow : usageDataSet) {
-			String dbColumnName = usageDataRow.getString(ConfigConstants.COLUMN_1);
-			if (dbColumnName.matches(columnNames)) {
-			String columnName = splitColumnName ? dbColumnName.split(ConfigConstants.TILDA)[1] : dbColumnName;
-				Object value ;
-				if(columnName.matches(ConfigConstants.BIGINT_COLUMNS)){
-				value = TypeCodec.bigint().deserialize(usageDataRow.getBytes(ConfigConstants.VALUE),
-						cqlDAO.getClusterProtocolVersion());
-				}else{
-					value = TypeCodec.varchar().deserialize(usageDataRow.getBytes(ConfigConstants.VALUE),
-							cqlDAO.getClusterProtocolVersion());
-				}
-				dataMap.put(appendHyphen(title, collectionType, ExportConstants.csvHeaders(columnName)), value);
-			}
-		}
+	private void processResultSet(ColumnList<String> usageDataSet, boolean splitColumnName, String columnNames,Map<String, Object> dataMap, String title, String collectionType){
+		dataMap.put(appendHyphen(title, collectionType, ExportConstants.VIEWS), usageDataSet.getLongValue("views", 0L));
+		dataMap.put(appendHyphen(title, collectionType, ExportConstants.TIME_SPENT), usageDataSet.getLongValue("time_spent", 0L));
+		dataMap.put(appendHyphen(title, collectionType, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue("score_in_percentage", 0L));
 	}
 	private Map<String, Object> getDataMap() {
 		Map<String, Object> dataMap = new LinkedHashMap<String, Object>();

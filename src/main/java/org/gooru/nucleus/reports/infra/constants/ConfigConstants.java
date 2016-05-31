@@ -16,6 +16,7 @@ public final class ConfigConstants {
     public static final String CASSANDRA_CLUSTER = "cassandra.cluster";
     public static final String CASSANDRA_KEYSAPCE = "cassandra.keyspace";
     public static final String CASSANDRA_SEEDS = "cassandra.seeds";
+    public static final String CASSANDRA_DATACENTER = "cassandra.datacenter";
     
     public static final String FILE_DOWNLOAD_APP_URL = "insights.file.app.path";
     public static final String FILE_SAVE_REAL_PATH = "insights.file.real.path";
@@ -50,6 +51,10 @@ public final class ConfigConstants {
 	public static final String URL = "url";
 	public static final String CSV_EXT = ".csv";
 	public static final String ZIP_EXT = ".zip";
+	
+	public static final String GOORUOID = "gooruOId";
+	public static final String TYPE = "type";
+	public static final String RESOURCE_TYPE = "resourceType";
 	
     private ConfigConstants() {
         throw new AssertionError();

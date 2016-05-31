@@ -32,9 +32,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 	
 		MessageConsumer<Object> status = null;
 		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
-
 			LOGGER.debug("Received message: '{}'", message.body());
-
 			vertx.executeBlocking(future -> {
 				String zipFileName = getZipFileName(message.body().toString());
 				LOGGER.info("zipFileName : " + zipFileName);
@@ -42,10 +40,12 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				if (!um.getCacheMemory().containsKey(zipFileName)) {
 					um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 					JsonObject body = getHttpBody(message.body().toString());
-					result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
-							body.getString(RouteConstants.CLASS_ID),body.getString(RouteConstants.COURSE_ID),null,zipFileName));
-					vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)+ConfigConstants.SLASH+ zipFileName);
-				}else{
+					result = MessageResponseFactory
+							.createOkayResponse(classExportService.exportCsv(body.getString(RouteConstants.CLASS_ID),
+									body.getString(RouteConstants.COURSE_ID), null, zipFileName));
+					vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
+							+ ConfigConstants.SLASH + zipFileName);
+				} else {
 					JsonObject resultObject = new JsonObject();
 					resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
 					result = MessageResponseFactory.createOkayResponse(resultObject);
@@ -60,31 +60,6 @@ public class DownloadReportVerticle extends AbstractVerticle {
 
 		});
 
-		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST_STATUS, message -> {
-
-			LOGGER.debug("Received message: '{}'", message.body());
-			vertx.executeBlocking(future -> {
-				JsonObject resultObject = new JsonObject();
-				String zipFileName = getZipFileName(message.body().toString());
-				LOGGER.debug("key:" + zipFileName);
-				if (um.getCacheMemory().containsKey(zipFileName)) {
-					resultObject.put(zipFileName, um.getCacheMemory().get(zipFileName));
-					//resultObject.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName);
-					resultObject.put(ConfigConstants.URL, zipFileName);
-				} else {
-					resultObject.put(zipFileName, ConfigConstants.NOT_AVAILABLE);
-				}
-				LOGGER.debug("cache :" + um.getCacheMemory());
-				MessageResponse result = MessageResponseFactory.createOkayResponse(resultObject);
-				future.complete(result);
-			}, res -> {
-				MessageResponse result = (MessageResponse) res.result();
-				LOGGER.debug("Sending response: '{}'", result.reply());
-				message.reply(result.reply(), result.deliveryOptions());
-
-			});
-
-		});
 
 		status.completionHandler(result -> {
 			if (result.succeeded()) {

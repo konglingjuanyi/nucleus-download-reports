@@ -20,6 +20,7 @@ public final class RouteConstants {
 
     public static final String INTERNAL_METRICS_ROUTE = API_BASE_ROUTE + "internal/metrics";
     
+    public static final String API_AUTH_ROUTE = API_BASE_ROUTE+"*";
     public static final String DOWNLOAD_REQUEST = API_BASE_ROUTE + CLASS + SLASH + COLON + CLASS_ID + SLASH + COURSE + SLASH + COLON + COURSE_ID + SLASH + DOWNLOAD + SLASH + REQUEST;
     public static final String DOWNLOAD_FILE =  API_BASE_ROUTE + CLASS + SLASH + COLON + CLASS_ID + SLASH + COURSE + SLASH + COLON + COURSE_ID + SLASH + DOWNLOAD + SLASH + FILE;
 

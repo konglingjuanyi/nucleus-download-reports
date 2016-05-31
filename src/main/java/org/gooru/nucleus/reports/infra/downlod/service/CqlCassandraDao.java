@@ -1,7 +1,10 @@
 package org.gooru.nucleus.reports.infra.downlod.service;
 
+import java.util.Collection;
+
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
+import com.netflix.astyanax.model.ColumnList;
 
 public interface CqlCassandraDao {
 
@@ -24,4 +27,8 @@ public interface CqlCassandraDao {
 	ResultSet getArchievedCollectionRecentSessionId(String rowKey);
 	
 	ResultSet getArchievedSessionData(String sessionId);
+
+	ColumnList<String> readByKey(String columnFamilyName, String key);
+
+	ColumnList<String> read(String columnFamilyName, String key, Collection<String> columnList);
 }

@@ -16,7 +16,10 @@ public final class MessageConstants {
     public static final String MSG_HTTP_VALIDATION_ERROR = "http.validation.error";
     public static final String MSG_HTTP_HEADERS = "http.headers";
     public static final String MSG_MESSAGE = "message";
-
+    public static final String MSG_OP_AUTH = "auth";
+    public static final String MSG_HEADER_TOKEN = "sessionToken";
+    public static final String MSG_USER_ANONYMOUS = "anonymous";
+    
     // Operation names
     public static final String MSG_OP_DOWNLOAD_REPORT_REQUEST = "download.report.request";
     public static final String MSG_OP_DOWNLOAD_REPORT_STATUS = "download.report.status";

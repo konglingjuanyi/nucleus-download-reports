@@ -14,14 +14,17 @@ import org.gooru.nucleus.reports.infra.bootstrap.DeployVerticle;
  */
 public class VerticleRegistry implements Iterable<String> {
 
+	private static final String AUTH_VERTICLE = "org.gooru.nucleus.reports.infra.download.verticles.AuthVerticle";
+	
     private static final String DOWNLOAD_REQUEST_VERTICLE = "org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle";
 
-    private static final String HTTP_VERTICLE = "org.gooru.nucleus.reports.infra.server.HttpVerticle";
+    private static final String HTTP_VERTICLE = "org.gooru.nucleus.reports.infra.download.verticles.HttpVerticle";
 
     private final Iterator<String> internalIterator;
 
     public VerticleRegistry() {
         List<String> initializers = new ArrayList<>();
+        //initializers.add(AUTH_VERTICLE);
         initializers.add(DOWNLOAD_REQUEST_VERTICLE);
         initializers.add(HTTP_VERTICLE);
         internalIterator = initializers.iterator();

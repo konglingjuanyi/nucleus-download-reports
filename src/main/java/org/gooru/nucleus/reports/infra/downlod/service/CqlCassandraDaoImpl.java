@@ -1,5 +1,7 @@
 package org.gooru.nucleus.reports.infra.downlod.service;
 
+import java.util.Collection;
+
 import org.gooru.nucleus.reports.infra.component.CassandraClient;
 import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
@@ -12,10 +14,16 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.netflix.astyanax.model.ColumnFamily;
+import com.netflix.astyanax.model.ColumnList;
+import com.netflix.astyanax.query.RowQuery;
+import com.netflix.astyanax.retry.ConstantBackoff;
+import com.netflix.astyanax.serializers.StringSerializer;
 
 public class CqlCassandraDaoImpl implements CqlCassandraDao {
 
-	private ConsistencyLevel DEFAULT_CONSISTENCY_LEVEL = ConsistencyLevel.QUORUM;
+	private final ConsistencyLevel DEFAULT_CONSISTENCY_LEVEL = ConsistencyLevel.QUORUM;
+	private final com.netflix.astyanax.model.ConsistencyLevel CONSISTENCY_LEVEL = com.netflix.astyanax.model.ConsistencyLevel.CL_EACH_QUORUM;
 	
 	private static final Logger LOG = LoggerFactory.getLogger(CqlCassandraDaoImpl.class);		
 	
@@ -133,4 +141,40 @@ public class CqlCassandraDaoImpl implements CqlCassandraDao {
 	public ProtocolVersion getClusterProtocolVersion(){
 		return cassandra.getProtocolVersion();
 	}
+	
+	@Override
+	public ColumnList<String> readByKey(String columnFamilyName, String key) {
+		ColumnList<String> query = null;
+
+		try {
+			query = cassandra.getKeyspace().prepareQuery(this.accessColumnFamily(columnFamilyName)).setConsistencyLevel(CONSISTENCY_LEVEL).withRetryPolicy(new ConstantBackoff(2000, 5)).getKey(key).execute().getResult();
+		} catch (Exception e) {
+			LOG.error("error while reading columnfamily "+columnFamilyName, e);
+		}
+
+		return query;
+	}
+
+	@Override
+	public ColumnList<String> read(String columnFamilyName, String key, Collection<String> columnList) {
+		ColumnList<String> queryResult = null;
+
+		try {
+			RowQuery<String, String> query = cassandra.getKeyspace().prepareQuery(this.accessColumnFamily(columnFamilyName)).setConsistencyLevel(CONSISTENCY_LEVEL).withRetryPolicy(new ConstantBackoff(2000, 5)).getKey(key);
+			if (!columnList.isEmpty()) {
+				query.withColumnSlice(columnList);
+			}
+			queryResult = query.execute().getResult();
+		} catch (Exception e) {
+			LOG.error("error while reading columnfamily "+columnFamilyName+ "using columnslice", e);
+		}
+
+		return queryResult;
+	}
+	private ColumnFamily<String, String> accessColumnFamily(String columnFamilyName) {
+		ColumnFamily<String, String> aggregateColumnFamily;
+		aggregateColumnFamily = new ColumnFamily<String, String>(columnFamilyName, StringSerializer.get(), StringSerializer.get());
+		return aggregateColumnFamily;
+	}
+
 }
