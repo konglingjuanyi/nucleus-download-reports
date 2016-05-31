@@ -34,27 +34,34 @@ public class DownloadReportVerticle extends AbstractVerticle {
 		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
 			LOGGER.debug("Received message: '{}'", message.body());
 			vertx.executeBlocking(future -> {
+				MessageResponse result = null;
+				try{
 				String zipFileName = getZipFileName(message.body().toString());
 				LOGGER.info("zipFileName : " + zipFileName);
-				JsonObject result = null;
 				if (!um.getCacheMemory().containsKey(zipFileName)) {
 					um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 					JsonObject body = getHttpBody(message.body().toString());
-					result =classExportService.exportCsv(body.getString(RouteConstants.CLASS_ID),
-									body.getString(RouteConstants.COURSE_ID), null, zipFileName);
-					//delete folder
-					/*vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
+					result = MessageResponseFactory
+							.createOkayResponse(classExportService.exportCsv(body.getString(RouteConstants.CLASS_ID),
+									body.getString(RouteConstants.COURSE_ID), null, zipFileName));
+					/**
+					 * delete folder
+					 * vertx.fileSystem().deleteBlocking(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
 							+ ConfigConstants.SLASH + zipFileName);*/
 				} else {
-					result = new JsonObject();
-					result.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
+					JsonObject resultObject = new JsonObject();
+					resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(zipFileName));
+					result = MessageResponseFactory.createOkayResponse(resultObject);
+				}
+				}catch(Exception e){
+					LOGGER.error("exception",e);
 				}
 				future.complete(result);
 			}, res -> {
-				/*MessageResponse result = (MessageResponse) res.result();
+				MessageResponse result = (MessageResponse) res.result();
 				LOGGER.debug("Sending response: '{}'", result.reply());
-				message.reply(result.reply(), result.deliveryOptions());*/
-				message.reply(res);
+				message.reply(result.reply(), result.deliveryOptions());
+
 			});
 
 		});
