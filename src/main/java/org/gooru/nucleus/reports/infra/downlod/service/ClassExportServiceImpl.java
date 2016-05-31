@@ -46,12 +46,12 @@ public class ClassExportServiceImpl implements ClassExportService {
 			String courseTitle = getContentTitle(courseId);
 			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName,zip);
 			for (String unitId : getCollectionItems(courseId)) {
-				LOG.info("	unit : " + unitId);
-				String unitTitle = getContentTitle(courseId);
+				String unitTitle = getContentTitle(unitId);
+				LOG.info("unit : " + unitTitle);
 				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT,courseTitle,unitTitle,null,null, classMembersList, zipFileName,zip);
 				for (String lessonId : getCollectionItems(unitId)) {
-					LOG.info("		lesson : " + lessonId);
-					String lessonTitle = getContentTitle(courseId);
+					String lessonTitle = getContentTitle(lessonId);
+					LOG.info("lesson : " + lessonTitle);
 					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON,courseTitle,unitTitle,lessonTitle,null, classMembersList, zipFileName, zip);
 					/*
 					 * for(String assessmentId : getCollectionItems(lessonId)){
