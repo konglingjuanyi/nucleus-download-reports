@@ -97,7 +97,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			String folderName =  appendSlash(zipFileName,courseTitle,unitTitle, lessonTitle, assessmentTitle);
 			LOG.info("csvName:" + csvName);
 			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
-			zipFileGenerator.zipDir(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT, (um.getFileSaveRealPath() + zipFileName));
+			zipFileGenerator.zipDirectoryNew(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT, (um.getFileSaveRealPath() + zipFileName));
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}
