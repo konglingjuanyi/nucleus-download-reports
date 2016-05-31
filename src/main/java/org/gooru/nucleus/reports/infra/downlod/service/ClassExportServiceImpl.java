@@ -41,16 +41,15 @@ public class ClassExportServiceImpl implements ClassExportService {
 			}
 			JsonObject result = new JsonObject();
 			LOG.info("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
+			LOG.info("CSV generation started...........");
 			List<String> classMembersList = getClassMembersList(classId, userId);
 			String courseTitle = getContentTitle(courseId);
 			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName);
 			for (String unitId : getCollectionItems(courseId)) {
 				String unitTitle = getContentTitle(unitId);
-				LOG.info("unit : " + unitTitle);
 				this.export(classId, courseId, unitId, null, null, ConfigConstants.UNIT,courseTitle,unitTitle,null,null, classMembersList, zipFileName);
 				for (String lessonId : getCollectionItems(unitId)) {
 					String lessonTitle = getContentTitle(lessonId);
-					LOG.info("lesson : " + lessonTitle);
 					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON,courseTitle,unitTitle,lessonTitle,null, classMembersList, zipFileName);
 					/*
 					 * for(String assessmentId : getCollectionItems(lessonId)){
@@ -64,40 +63,46 @@ public class ClassExportServiceImpl implements ClassExportService {
 			
 			um.getCacheMemory().put(zipFileName, ConfigConstants.AVAILABLE);
 			LOG.info("CSV generation completed...........");
-			//result.put(ConfigConstants.URL, um.getDownloadAppUrl() + zipFileName +ConfigConstants.ZIP_EXT);
 			result.put(ConfigConstants.STATUS, ConfigConstants.AVAILABLE);
 			
 			return result;
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("exception",e);
 		}
-		return null;
+		return new JsonObject();
 	}
 	private JsonObject export(String classId, String courseId, String unitId, String lessonId, String collectionId,
-			String type, String courseTitle,String unitTitle, String lessonTitle, String assessmentTitle,List<String> classMembersList, String zipFileName) {
+			String type, String courseTitle, String unitTitle, String lessonTitle, String assessmentTitle,
+			List<String> classMembersList, String zipFileName) {
 		JsonObject result = new JsonObject();
 		try {
 			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
-			
-			
+
 			for (String studentId : classMembersList) {
 				Map<String, Object> dataMap = getDataMap();
 				setUserDetails(dataMap, studentId);
 				String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionId, studentId);
-				LOG.info("usageRowKey" + usageRowKey);
 				String leastTitle = getLeastTitle(courseTitle, unitTitle, lessonTitle, assessmentTitle, type);
 				setDefaultUsage(leastTitle, dataMap);
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.COLLECTION);
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.ASSESSMENT);
 				dataList.add(dataMap);
 			}
-			LOG.info("CSV generation started...........");
-			String csvName = appendSlash(zipFileName,courseTitle,unitTitle, lessonTitle, assessmentTitle,ConfigConstants.DATA);
-			String folderName =  appendSlash(zipFileName,courseTitle,unitTitle, lessonTitle, assessmentTitle);
-			LOG.info("csvName:" + csvName);
-			csvFileGenerator.generateCSVReport(true,folderName,csvName, dataList);
-			zipFileGenerator.zipDirectoryNew(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT, (um.getFileSaveRealPath() + zipFileName));
+			String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle,
+					ConfigConstants.DATA);
+			String folderName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle);
+			try {
+				csvFileGenerator.generateCSVReport(true, folderName, csvName, dataList);
+			} catch (Exception e) {
+				LOG.error("exception while writing into csv", e);
+			}
+			try {
+				zipFileGenerator.zipDirectory(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT,
+						(um.getFileSaveRealPath() + zipFileName));
+			} catch (Exception e) {
+				LOG.error("exception while generating zip", e);
+			}
 		} catch (Exception e) {
 			LOG.error("Exception while generating CSV", e);
 		}
