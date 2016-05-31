@@ -43,14 +43,4 @@ public class ZipFileGenerator {
 		}
 	}
 	
-	private String setFilePath(String file){
-		
-		String fileName = um.getFileSaveRealPath();
-		if(file != null && (!file.isEmpty())){
-			fileName += file;
-		}else{
-			fileName +=DEFAULT_FILE_NAME;
-		}
-		return fileName+ConfigConstants.CSV_EXT;
-	}
 }
