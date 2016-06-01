@@ -107,13 +107,13 @@ public class ClassExportServiceImpl implements ClassExportService {
 					setDefaultCollectionUsage(collectionTitle, dataMap);
 					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
 					dataList.add(dataMap);
-					exportResource(classId, courseId, unitId, lessonId, collectionId, studentId, ConfigConstants.RESOURCE, resourceDataMap, resourceDataList);
+					exportResource(classId, courseId, unitId, lessonId, collectionId, studentId, ConfigConstants.RESOURCE, resourceDataMap);
 					resourceDataList.add(resourceDataMap);
 				}
 				//writing collection/assessment into csv and add into zip
 				generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle, collectionTitle, dataList);
 				//writing collection/assessment into csv and add into zip
-				generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle, appendHyphen(collectionTitle,ConfigConstants.ITEMS), dataList);
+				generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle, appendHyphen(collectionTitle,ConfigConstants.ITEMS), resourceDataList);
 			}
 		} catch (Exception e) {
 			LOG.error("Exception while preparing collection/assessment data list for CSV", e);
@@ -137,18 +137,25 @@ public class ClassExportServiceImpl implements ClassExportService {
 		}
 	}
 	private void exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,String studentId,
-			String type,Map<String, Object> dataMap,List<Map<String, Object>> dataList) {
-		
-		LOG.debug("get recent session id key : {}",appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
-		
-		String sessionId = getSessionId(appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
+			String type, Map<String, Object> dataMap) {
+
+		LOG.debug("get recent session id key : {}",
+				appendTilda(ConfigConstants.RS, classId, courseId, unitId, lessonId, collectionId, studentId));
+
+		String sessionId = getSessionId(
+				appendTilda(ConfigConstants.RS, classId, courseId, unitId, lessonId, collectionId, studentId));
 		LOG.debug("session id : {}", sessionId);
-		
-		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSION_ACTIVITY, sessionId);
+
+		ColumnList<String> usageDataSet = null;
+		if (StringUtils.isNotBlank(sessionId) && !sessionId.equalsIgnoreCase(ConfigConstants.NA)) {
+			usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSION_ACTIVITY, sessionId);
+		}
 		for (String resourceId : getCollectionItems(collectionId)) {
 			String resourceTitle = getContentTitle(collectionId);
 			setDefaultResourceUsage(resourceTitle, dataMap);
-			setResourceMetrics(usageDataSet, dataMap, resourceTitle, resourceId);
+			if (usageDataSet != null) {
+				setResourceMetrics(usageDataSet, dataMap, resourceTitle, resourceId);
+			}
 		}
 	}
 	
