@@ -40,7 +40,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 			}
 			JsonObject result = new JsonObject();
 			LOG.debug("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
-			LOG.debug("CSV generation started...........");
 			List<String> classMembersList = getClassMembersList(classId, userId);
 			String courseTitle = getContentTitle(courseId);
 			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName);
@@ -53,9 +52,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 					this.exportCollection(classId, courseId, unitId, lessonId,  ConfigConstants.COLLECTION, courseTitle, unitTitle, lessonTitle,  classMembersList, zipFileName);
 				}
 			}
-			
 			um.getCacheMemory().put(zipFileName, ConfigConstants.AVAILABLE);
-			LOG.debug("CSV generation completed...........");
 			result.put(ConfigConstants.STATUS, ConfigConstants.AVAILABLE);
 			
 			return result;
@@ -81,22 +78,10 @@ public class ClassExportServiceImpl implements ClassExportService {
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.ASSESSMENT);
 				dataList.add(dataMap);
 			}
-			String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle,
-					appendHyphen(leastTitle,ConfigConstants.DATA));
-			String folderName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle);
-			try {
-				csvFileGenerator.generateCSVReport(true, folderName, csvName, dataList);
-			} catch (Exception e) {
-				LOG.error("exception while writing into csv", e);
-			}
-			try {
-				zipFileGenerator.zipDirectory(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT,
-						(um.getFileSaveRealPath() + zipFileName));
-			} catch (Exception e) {
-				LOG.error("exception while generating zip", e);
-			}
+			//writing into csv and add into zip
+			generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle, leastTitle, dataList);
 		} catch (Exception e) {
-			LOG.error("Exception while generating CSV", e);
+			LOG.error("Exception while preparing CUL data list for CSV", e);
 		}
 		return result;
 	}
@@ -121,25 +106,29 @@ public class ClassExportServiceImpl implements ClassExportService {
 					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
 					dataList.add(dataMap);
 				}
-				String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle,
-						appendHyphen(collectionTitle,ConfigConstants.DATA));
-				String folderName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle);
-				try {
-					csvFileGenerator.generateCSVReport(true, folderName, csvName, dataList);
-				} catch (Exception e) {
-					LOG.error("exception while writing into csv", e);
-				}
-				try {
-					zipFileGenerator.zipDirectory(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT,
-							(um.getFileSaveRealPath() + zipFileName));
-				} catch (Exception e) {
-					LOG.error("exception while generating zip", e);
-				}
+				//writing into csv and add into zip
+				generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle, collectionTitle, dataList);
 			}
 		} catch (Exception e) {
-			LOG.error("Exception while generating CSV", e);
+			LOG.error("Exception while preparing collection/assessment data list for CSV", e);
 		}
 		return result;
+	}
+	private void generateFile(String zipFileName,String courseTitle,String unitTitle,String lessonTitle,String collectionTitle,String leastTitle,List<Map<String, Object>> dataList){
+		String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle,
+				appendHyphen(leastTitle,ConfigConstants.DATA));
+		String folderName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle);
+		try {
+			csvFileGenerator.generateCSVReport(true, folderName, csvName, dataList);
+		} catch (Exception e) {
+			LOG.error("exception while writing into csv", e);
+		}
+		try {
+			zipFileGenerator.zipDirectory(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT,
+					(um.getFileSaveRealPath() + zipFileName));
+		} catch (Exception e) {
+			LOG.error("exception while generating zip", e);
+		}
 	}
 	private JsonObject exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,
 			String type, String courseTitle, String unitTitle, String lessonTitle, String assessmentTitle,
