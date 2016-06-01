@@ -138,11 +138,12 @@ public class ClassExportServiceImpl implements ClassExportService {
 	}
 	private void exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,String studentId,
 			String type,Map<String, Object> dataMap,List<Map<String, Object>> dataList) {
-		LOG.debug("get recent session id key : ",appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
+		
+		LOG.info("get recent session id key : {}",appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
 		
 		String sessionId = getSessionId(appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
 		
-		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSIONS, sessionId);
+		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSION_ACTIVITY, sessionId);
 		for (String resourceId : getCollectionItems(collectionId)) {
 			String resourceTitle = getContentTitle(collectionId);
 			setDefaultResourceUsage(resourceTitle, dataMap);
