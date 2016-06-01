@@ -214,22 +214,10 @@ public class ClassExportServiceImpl implements ClassExportService {
 	}
 
 	private void setUsageData(Map<String, Object> dataMap, String title, String rowKey, String collectionType) {
+		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,appendTilda(rowKey, collectionType));
 		long views = 0;
 		long scoreInPercentage = 0;
 		long timespent = 0;
-		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,appendTilda(rowKey, collectionType));
-		getMetrics(usageDataSet, views, scoreInPercentage, timespent);
-		setMetrics(dataMap, title, collectionType,views,scoreInPercentage,timespent);
-	}
-
-	
-	private void setMetrics(ColumnList<String> usageDataSet,Map<String, Object> dataMap, String title,String leastId){
-		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
-		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
-		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
-	}
-	
-	private void getMetrics(ColumnList<String> usageDataSet, long views, long scoreInPercentage, long timespent) {
 		for (Column<String> metricsColumn : usageDataSet) {
 			if (!metricsColumn.getName().matches(ConfigConstants.IGNORE_COLUMNS)) {
 				if (metricsColumn.getName().endsWith(ConfigConstants.VIEWS)) {
@@ -242,16 +230,19 @@ public class ClassExportServiceImpl implements ClassExportService {
 			}
 		}
 		scoreInPercentage = views != 0 ? (scoreInPercentage / views) : 0;
-		LOG.debug("views : " + views);
-		LOG.debug("scoreInPercentage : " + scoreInPercentage);
-		LOG.debug("timespent : " + timespent);
-	}
-	
-	private void setMetrics(Map<String, Object> dataMap, String title, String collectionType,long views,long scoreInPercentage,long timespent){
 		dataMap.put(appendHyphen(title, collectionType, ExportConstants.VIEWS), views);
 		dataMap.put(appendHyphen(title, collectionType, ExportConstants.TIME_SPENT), timespent);
 		dataMap.put(appendHyphen(title, collectionType, ExportConstants.SCORE_IN_PERCENTAGE), scoreInPercentage);
 	}
+	
+	private void setMetrics(ColumnList<String> usageDataSet,Map<String, Object> dataMap, String title,String leastId){
+		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
+		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
+		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
+	}
+	
+	
+
 	private Map<String, Object> getDataMap() {
 		Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
 		dataMap.put(ExportConstants.FIRST_NAME, "");
