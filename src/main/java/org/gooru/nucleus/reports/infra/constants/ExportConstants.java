@@ -37,6 +37,10 @@ public class ExportConstants {
 	
 	public static final String ANSWER_STATUS = "Answer Status";
 	
+	public static final String COLLECTION_TYPE = "Collection Type";
+	
+	public static final String TYPE = "Type";
+	
 	static {
 		csvHeaders = new HashMap<String, String>();
 		csvHeaders.put("score_in_percentage", SCORE_IN_PERCENTAGE);

@@ -37,7 +37,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				MessageResponse result = null;
 				try{
 				String zipFileName = getZipFileName(message.body().toString());
-				LOGGER.info("zipFileName : " + zipFileName);
+				LOGGER.debug("zipFileName : " + zipFileName);
 				if (!um.getCacheMemory().containsKey(zipFileName)) {
 					um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 					JsonObject body = getHttpBody(message.body().toString());

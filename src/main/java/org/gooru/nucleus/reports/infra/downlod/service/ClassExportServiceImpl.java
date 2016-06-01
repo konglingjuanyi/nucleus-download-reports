@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
@@ -40,8 +39,8 @@ public class ClassExportServiceImpl implements ClassExportService {
 				zipFileName = classId;
 			}
 			JsonObject result = new JsonObject();
-			LOG.info("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
-			LOG.info("CSV generation started...........");
+			LOG.debug("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
+			LOG.debug("CSV generation started...........");
 			List<String> classMembersList = getClassMembersList(classId, userId);
 			String courseTitle = getContentTitle(courseId);
 			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName);
@@ -51,18 +50,12 @@ public class ClassExportServiceImpl implements ClassExportService {
 				for (String lessonId : getCollectionItems(unitId)) {
 					String lessonTitle = getContentTitle(lessonId);
 					this.export(classId, courseId, unitId, lessonId, null, ConfigConstants.LESSON,courseTitle,unitTitle,lessonTitle,null, classMembersList, zipFileName);
-					/*
-					 * for(String assessmentId : getCollectionItems(lessonId)){
-					 * LOG.info("			assessment : " + assessmentId);
-					 * this.export(classId, courseId,unitId, lessonId,
-					 * assessmentId, ConfigConstants.COLLECTION,
-					 * userId,zipFileName); }
-					 */
+					this.exportCollection(classId, courseId, unitId, lessonId,  ConfigConstants.COLLECTION, courseTitle, unitTitle, lessonTitle,  classMembersList, zipFileName);
 				}
 			}
 			
 			um.getCacheMemory().put(zipFileName, ConfigConstants.AVAILABLE);
-			LOG.info("CSV generation completed...........");
+			LOG.debug("CSV generation completed...........");
 			result.put(ConfigConstants.STATUS, ConfigConstants.AVAILABLE);
 			
 			return result;
@@ -78,19 +71,18 @@ public class ClassExportServiceImpl implements ClassExportService {
 		try {
 			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
-
+			String leastTitle = getLeastTitle(courseTitle, unitTitle, lessonTitle, assessmentTitle, type);
 			for (String studentId : classMembersList) {
 				Map<String, Object> dataMap = getDataMap();
 				setUserDetails(dataMap, studentId);
 				String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, collectionId, studentId);
-				String leastTitle = getLeastTitle(courseTitle, unitTitle, lessonTitle, assessmentTitle, type);
 				setDefaultUsage(leastTitle, dataMap);
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.COLLECTION);
 				setUsageData(dataMap, leastTitle, usageRowKey, ConfigConstants.ASSESSMENT);
 				dataList.add(dataMap);
 			}
 			String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle,
-					ConfigConstants.DATA);
+					appendHyphen(leastTitle,ConfigConstants.DATA));
 			String folderName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, assessmentTitle);
 			try {
 				csvFileGenerator.generateCSVReport(true, folderName, csvName, dataList);
@@ -109,6 +101,52 @@ public class ClassExportServiceImpl implements ClassExportService {
 		return result;
 	}
 
+	private JsonObject exportCollection(String classId, String courseId, String unitId, String lessonId,
+			String type, String courseTitle, String unitTitle, String lessonTitle,
+			List<String> classMembersList, String zipFileName) {
+		JsonObject result = new JsonObject();
+		try {
+			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
+			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
+
+			for (String collectionId : getCollectionItems(lessonId)) {
+				String collectionTitle = getContentTitle(collectionId);
+				Map<String, Object> dataMap = getDataMap();
+				for (String studentId : classMembersList) {
+					String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, studentId);
+					ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,
+							usageRowKey);
+					setUserDetails(dataMap, studentId);
+					setDefaultResourceUsage(collectionTitle, dataMap);
+					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
+					dataList.add(dataMap);
+
+				}
+				String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle,
+						appendHyphen(collectionTitle,ConfigConstants.DATA));
+				String folderName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle);
+				try {
+					csvFileGenerator.generateCSVReport(true, folderName, csvName, dataList);
+				} catch (Exception e) {
+					LOG.error("exception while writing into csv", e);
+				}
+				try {
+					zipFileGenerator.zipDirectory(um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT,
+							(um.getFileSaveRealPath() + zipFileName));
+				} catch (Exception e) {
+					LOG.error("exception while generating zip", e);
+				}
+			}
+		} catch (Exception e) {
+			LOG.error("Exception while generating CSV", e);
+		}
+		return result;
+	}
+	private JsonObject exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,
+			String type, String courseTitle, String unitTitle, String lessonTitle, String assessmentTitle,
+			List<String> classMembersList, String zipFileName) {
+		return null;
+	}
 	private String getLeastTitle(String courseTitle, String unitTitle, String lessonTitle, String collectionTitle, String type) {
 		String title = courseTitle;
 		if (type.equalsIgnoreCase(ConfigConstants.COURSE)) {
@@ -116,9 +154,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 		} else if (type.equalsIgnoreCase(ConfigConstants.UNIT)) {
 			title = unitTitle;
 		} else if (type.equalsIgnoreCase(ConfigConstants.LESSON)) {
-			title = unitTitle;
-		} else if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
 			title = lessonTitle;
+		} else if (type.equalsIgnoreCase(ConfigConstants.COLLECTION)) {
+			title = collectionTitle;
 		}
 		return title;
 	}
@@ -177,16 +215,44 @@ public class ClassExportServiceImpl implements ClassExportService {
 	}
 
 	private void setUsageData(Map<String, Object> dataMap, String title, String rowKey, String collectionType) {
-		String columnNames = ConfigConstants.COLUMNS_TO_EXPORT;;
-		boolean splitColumnName = false;
+		long views = 0;
+		long scoreInPercentage = 0;
+		long timespent = 0;
 		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,appendTilda(rowKey, collectionType));
-		processResultSet(usageDataSet, splitColumnName, columnNames, dataMap, title, collectionType);
+		getMetrics(usageDataSet, views, scoreInPercentage, timespent);
+		setMetrics(dataMap, title, collectionType,views,scoreInPercentage,timespent);
 	}
 
-	private void processResultSet(ColumnList<String> usageDataSet, boolean splitColumnName, String columnNames,Map<String, Object> dataMap, String title, String collectionType){
-		dataMap.put(appendHyphen(title, collectionType, ExportConstants.VIEWS), usageDataSet.getLongValue("views", 0L));
-		dataMap.put(appendHyphen(title, collectionType, ExportConstants.TIME_SPENT), usageDataSet.getLongValue("time_spent", 0L));
-		dataMap.put(appendHyphen(title, collectionType, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue("score_in_percentage", 0L));
+	
+	private void setMetrics(ColumnList<String> usageDataSet,Map<String, Object> dataMap, String title,String leastId){
+		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
+		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
+		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
+		dataMap.put(appendHyphen(title, ExportConstants.TYPE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.COLLECTION_TYPE),0L));
+	}
+	
+	private void getMetrics(ColumnList<String> usageDataSet, long views, long scoreInPercentage, long timespent) {
+		for (Column<String> metricsColumn : usageDataSet) {
+			if (!metricsColumn.getName().matches(ConfigConstants.IGNORE_COLUMNS)) {
+				if (metricsColumn.getName().endsWith(ConfigConstants.VIEWS)) {
+					views += metricsColumn.getLongValue();
+				} else if (metricsColumn.getName().endsWith(ConfigConstants.SCORE_IN_PERCENTAGE)) {
+					scoreInPercentage += metricsColumn.getLongValue();
+				} else if (metricsColumn.getName().endsWith(ConfigConstants.TIME_SPENT)) {
+					timespent += metricsColumn.getLongValue();
+				}
+			}
+		}
+		scoreInPercentage = views != 0 ? (scoreInPercentage / views) : 0;
+		LOG.debug("views : " + views);
+		LOG.debug("scoreInPercentage : " + scoreInPercentage);
+		LOG.debug("timespent : " + timespent);
+	}
+	
+	private void setMetrics(Map<String, Object> dataMap, String title, String collectionType,long views,long scoreInPercentage,long timespent){
+		dataMap.put(appendHyphen(title, collectionType, ExportConstants.VIEWS), views);
+		dataMap.put(appendHyphen(title, collectionType, ExportConstants.TIME_SPENT), timespent);
+		dataMap.put(appendHyphen(title, collectionType, ExportConstants.SCORE_IN_PERCENTAGE), scoreInPercentage);
 	}
 	private Map<String, Object> getDataMap() {
 		Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
@@ -208,7 +274,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), 0);
 		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), 0);
 		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), 0);
-		dataMap.put(appendHyphen(title, ExportConstants.ANSWER_STATUS), ConfigConstants.NA);
+		dataMap.put(appendHyphen(title, ExportConstants.TYPE), ConfigConstants.NA);
 	}
 	private String appendTilda(String... texts) {
 		StringBuffer sb = new StringBuffer();

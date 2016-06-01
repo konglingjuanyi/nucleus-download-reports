@@ -37,7 +37,11 @@ public final class ConfigConstants {
     public static final String UNIT = "unit";
     public static final String LESSON = "lesson";
     public static final String ASSESSMENT = "assessment";
-    public static final String COLUMNS_TO_EXPORT = "score_in_percentage|time_spent|views";
+    public static final String IGNORE_COLUMNS = "score_in_percentage|time_spent|views|unique_views";
+    public static final String SCORE_IN_PERCENTAGE = "score_in_percentage";
+    public static final String COLLECTION_TYPE = "collection_type";
+    public static final String TIME_SPENT = "time_spent";
+    public static final String VIEWS = "views";
 	public static final String RESOURCE_COLUMNS_TO_EXPORT = ".*question_status.*|.*score_in_percentage.*|.*time_spent.*|.*views.*";
 	public static final String STRING_COLUMNS = ".*collection_type.*";
 	public static final String BIGINT_COLUMNS = ".*score_in_percentage.*|.*time_spent.*|.*views.*";
