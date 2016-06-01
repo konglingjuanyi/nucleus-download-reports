@@ -107,9 +107,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 		JsonObject result = new JsonObject();
 		try {
 			result.put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
-			List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
 
 			for (String collectionId : getCollectionItems(lessonId)) {
+				List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
 				String collectionTitle = getContentTitle(collectionId);
 				for (String studentId : classMembersList) {
 					Map<String, Object> dataMap = getDataMap();
@@ -120,7 +120,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 					setDefaultResourceUsage(collectionTitle, dataMap);
 					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
 					dataList.add(dataMap);
-
 				}
 				String csvName = appendSlash(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle,
 						appendHyphen(collectionTitle,ConfigConstants.DATA));
