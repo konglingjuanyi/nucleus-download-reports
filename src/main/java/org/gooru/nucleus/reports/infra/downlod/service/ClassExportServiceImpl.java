@@ -139,9 +139,10 @@ public class ClassExportServiceImpl implements ClassExportService {
 	private void exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,String studentId,
 			String type,Map<String, Object> dataMap,List<Map<String, Object>> dataList) {
 		
-		LOG.info("get recent session id key : {}",appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
+		LOG.debug("get recent session id key : {}",appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
 		
 		String sessionId = getSessionId(appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
+		LOG.debug("session id : {}", sessionId);
 		
 		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSION_ACTIVITY, sessionId);
 		for (String resourceId : getCollectionItems(collectionId)) {
@@ -212,7 +213,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 		String sessionId = null;
 		ColumnList<String> recentSession = cqlDAO.readByKey(ColumnFamilyConstants.SESSIONS, rowKey);
 		if(recentSession != null){
-			recentSession.getStringValue(ConfigConstants._SESSION_ID, ConfigConstants.NA);
+			sessionId = recentSession.getStringValue(ConfigConstants._SESSION_ID, ConfigConstants.NA);
 		}
 		return sessionId;
 	}
