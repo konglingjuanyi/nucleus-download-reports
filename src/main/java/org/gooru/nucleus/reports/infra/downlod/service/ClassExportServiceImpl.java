@@ -111,8 +111,8 @@ public class ClassExportServiceImpl implements ClassExportService {
 
 			for (String collectionId : getCollectionItems(lessonId)) {
 				String collectionTitle = getContentTitle(collectionId);
-				Map<String, Object> dataMap = getDataMap();
 				for (String studentId : classMembersList) {
+					Map<String, Object> dataMap = getDataMap();
 					String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, studentId);
 					ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,
 							usageRowKey);
@@ -228,7 +228,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
 		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
 		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
-		dataMap.put(appendHyphen(title, ExportConstants.TYPE), usageDataSet.getStringValue(appendTilda(leastId,ConfigConstants.COLLECTION_TYPE),ConfigConstants.NA));
 	}
 	
 	private void getMetrics(ColumnList<String> usageDataSet, long views, long scoreInPercentage, long timespent) {
@@ -274,7 +273,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), 0);
 		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), 0);
 		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), 0);
-		dataMap.put(appendHyphen(title, ExportConstants.TYPE), ConfigConstants.NA);
 	}
 	private String appendTilda(String... texts) {
 		StringBuffer sb = new StringBuffer();
