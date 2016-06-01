@@ -59,6 +59,11 @@ public final class ConfigConstants {
 	public static final String GOORUOID = "gooruOId";
 	public static final String TYPE = "type";
 	public static final String RESOURCE_TYPE = "resourceType";
+	public static final String ITEMS = "Items";
+	public static final String RESOURCE = "resource";
+	public static final String _SESSION_ID = "session_id";
+	public static final String _QUESTION_STATUS = "question_status";
+	public static final String _TEXT = "text";
 	
     private ConfigConstants() {
         throw new AssertionError();

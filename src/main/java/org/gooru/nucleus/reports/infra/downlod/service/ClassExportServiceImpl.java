@@ -95,19 +95,25 @@ public class ClassExportServiceImpl implements ClassExportService {
 
 			for (String collectionId : getCollectionItems(lessonId)) {
 				List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
+				List<Map<String, Object>> resourceDataList = new ArrayList<Map<String, Object>>();
 				String collectionTitle = getContentTitle(collectionId);
 				for (String studentId : classMembersList) {
 					Map<String, Object> dataMap = getDataMap();
+					Map<String, Object> resourceDataMap = getDataMap();
 					String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, studentId);
 					ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,
 							usageRowKey);
 					setUserDetails(dataMap, studentId);
-					setDefaultResourceUsage(collectionTitle, dataMap);
+					setDefaultCollectionUsage(collectionTitle, dataMap);
 					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
 					dataList.add(dataMap);
+					exportResource(classId, courseId, unitId, lessonId, collectionId, studentId, ConfigConstants.RESOURCE, resourceDataMap, resourceDataList);
+					resourceDataList.add(resourceDataMap);
 				}
-				//writing into csv and add into zip
+				//writing collection/assessment into csv and add into zip
 				generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle, collectionTitle, dataList);
+				//writing collection/assessment into csv and add into zip
+				generateFile(zipFileName, courseTitle, unitTitle, lessonTitle, collectionTitle, appendHyphen(collectionTitle,ConfigConstants.ITEMS), dataList);
 			}
 		} catch (Exception e) {
 			LOG.error("Exception while preparing collection/assessment data list for CSV", e);
@@ -130,11 +136,20 @@ public class ClassExportServiceImpl implements ClassExportService {
 			LOG.error("exception while generating zip", e);
 		}
 	}
-	private JsonObject exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,
-			String type, String courseTitle, String unitTitle, String lessonTitle, String assessmentTitle,
-			List<String> classMembersList, String zipFileName) {
-		return null;
+	private void exportResource(String classId, String courseId, String unitId, String lessonId, String collectionId,String studentId,
+			String type,Map<String, Object> dataMap,List<Map<String, Object>> dataList) {
+		LOG.debug("get recent session id key : ",appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
+		
+		String sessionId = getSessionId(appendTilda(ConfigConstants.RS,classId, courseId, unitId, lessonId, collectionId, studentId));
+		
+		ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSIONS, sessionId);
+		for (String resourceId : getCollectionItems(collectionId)) {
+			String resourceTitle = getContentTitle(collectionId);
+			setDefaultResourceUsage(resourceTitle, dataMap);
+			setResourceMetrics(usageDataSet, dataMap, resourceTitle, resourceId);
+		}
 	}
+	
 	private String getLeastTitle(String courseTitle, String unitTitle, String lessonTitle, String collectionTitle, String type) {
 		String title = courseTitle;
 		if (type.equalsIgnoreCase(ConfigConstants.COURSE)) {
@@ -194,10 +209,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 
 	private String getSessionId(String rowKey) {
 		String sessionId = null;
-		ResultSet sessionIdSet = cqlDAO.getArchievedCollectionRecentSessionId(rowKey);
-		for (Row sessionIdRow : sessionIdSet) {
-			sessionId = TypeCodec.varchar().deserialize(sessionIdRow.getBytes(ConfigConstants.VALUE),
-					cqlDAO.getClusterProtocolVersion());
+		ColumnList<String> recentSession = cqlDAO.readByKey(ColumnFamilyConstants.SESSIONS, rowKey);
+		if(recentSession != null){
+			recentSession.getStringValue(ConfigConstants._SESSION_ID, ConfigConstants.NA);
 		}
 		return sessionId;
 	}
@@ -230,6 +244,12 @@ public class ClassExportServiceImpl implements ClassExportService {
 		dataMap.put(ExportConstants.SCORE_IN_PERCENTAGE, usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
 	}
 	
+	private void setResourceMetrics(ColumnList<String> usageDataSet,Map<String, Object> dataMap, String title,String leastId){
+		dataMap.put(appendHyphen(title,ExportConstants.VIEWS),  usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
+		dataMap.put(appendHyphen(title,ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
+		dataMap.put(appendHyphen(title,ExportConstants.ANSWER_STATUS), usageDataSet.getStringValue(appendTilda(leastId,ConfigConstants._QUESTION_STATUS),ConfigConstants.NA));
+		dataMap.put(appendHyphen(title,ExportConstants.TEXT),usageDataSet.getStringValue(appendTilda(leastId,ConfigConstants._TEXT),ConfigConstants.NA));
+	}
 	private Map<String, Object> getDataMap() {
 		Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
 		dataMap.put(ExportConstants.FIRST_NAME, "");
@@ -246,11 +266,19 @@ public class ClassExportServiceImpl implements ClassExportService {
 		dataMap.put(appendHyphen(ConfigConstants.ASSESSMENT, ExportConstants.SCORE_IN_PERCENTAGE), 0);
 	}
 
-	private void setDefaultResourceUsage(String title, Map<String, Object> dataMap) {
+	private void setDefaultCollectionUsage(String title, Map<String, Object> dataMap) {
 		dataMap.put(ExportConstants.VIEWS, 0);
 		dataMap.put(ExportConstants.TIME_SPENT, 0);
 		dataMap.put(ExportConstants.SCORE_IN_PERCENTAGE, 0);
 	}
+	
+	private void setDefaultResourceUsage(String title, Map<String, Object> dataMap) {
+		dataMap.put(appendHyphen(title,ExportConstants.VIEWS), 0);
+		dataMap.put(appendHyphen(title,ExportConstants.TIME_SPENT), 0);
+		dataMap.put(appendHyphen(title,ExportConstants.ANSWER_STATUS), ConfigConstants.NA);
+		dataMap.put(appendHyphen(title,ExportConstants.TEXT), ConfigConstants.NA);
+	}
+	
 	private String appendTilda(String... texts) {
 		StringBuffer sb = new StringBuffer();
 		for (String text : texts) {
