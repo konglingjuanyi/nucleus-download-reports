@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TypeCodec;
 import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 
@@ -99,7 +98,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 				String collectionTitle = getContentTitle(collectionId);
 				for (String studentId : classMembersList) {
 					Map<String, Object> dataMap = getDataMap();
-					Map<String, Object> resourceDataMap = getDataMap();
+										
 					String usageRowKey = appendTilda(classId, courseId, unitId, lessonId, studentId);
 					ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,
 							usageRowKey);
@@ -107,6 +106,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 					setDefaultCollectionUsage(collectionTitle, dataMap);
 					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
 					dataList.add(dataMap);
+					
+					Map<String, Object> resourceDataMap = getDataMap();
+					setUserDetails(dataMap, studentId);
 					exportResource(classId, courseId, unitId, lessonId, collectionId, studentId, ConfigConstants.RESOURCE, resourceDataMap);
 					resourceDataList.add(resourceDataMap);
 				}
