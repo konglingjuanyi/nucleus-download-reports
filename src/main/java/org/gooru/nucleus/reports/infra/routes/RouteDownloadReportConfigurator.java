@@ -1,6 +1,5 @@
 package org.gooru.nucleus.reports.infra.routes;
 
-import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.gooru.nucleus.reports.infra.constants.RouteConstants;

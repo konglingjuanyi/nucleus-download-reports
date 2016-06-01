@@ -154,7 +154,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 			usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.SESSION_ACTIVITY, sessionId);
 		}
 		for (String resourceId : getCollectionItems(collectionId)) {
-			String resourceTitle = getContentTitle(collectionId);
+			String resourceTitle = getContentTitle(resourceId);
 			setDefaultResourceUsage(resourceTitle, dataMap);
 			if (usageDataSet != null) {
 				setResourceMetrics(usageDataSet, dataMap, resourceTitle, resourceId);

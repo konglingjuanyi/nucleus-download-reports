@@ -1,5 +1,6 @@
 package org.gooru.nucleus.reports.infra.routes;
 
+import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
@@ -28,18 +29,21 @@ public class RouteAuthConfigurator implements RouteConfigurator {
 
         router.route(RouteConstants.API_AUTH_ROUTE).handler(routingContext -> {
 
-            String authorization = routingContext.request().getHeader(HttpConstants.HEADER_AUTH);
-            String sessionToken = null;
-            if (authorization != null && authorization.startsWith(HttpConstants.TOKEN)) {
-                sessionToken = authorization.substring(HttpConstants.TOKEN.length()).trim();
-            }
+        	String sessionToken = routingContext.request().getHeader(HttpConstants.HEADER_SESSION_TOKEN);
+        	if (StringUtils.isBlank(sessionToken)) {
+        		sessionToken = routingContext.request().getParam(HttpConstants.HEADER_SESSION_TOKEN);
+        	}
+            LOG.info("sessionToken : " + sessionToken);
 
             // If the session token is null or absent, we send an error to
             // client
             if (sessionToken == null || sessionToken.isEmpty()) {
                 routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
                     .setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
-            } else {
+            } else {            	
+            	  LOG.debug("User authenticated, Fowarding request to next route.. ");
+            	routingContext.next();
+            	/*
                 // If the session token is present, we send it to Message Bus
                 // for validation
                 DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000)
@@ -72,7 +76,7 @@ public class RouteAuthConfigurator implements RouteConfigurator {
                         routingContext.response().setStatusCode(HttpConstants.HttpStatus.ERROR.getCode()).end();
                     }
                 });
-            }
+            */}
         });
 		
 	}

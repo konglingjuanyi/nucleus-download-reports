@@ -11,7 +11,8 @@ public final class HttpConstants {
     public static final String HEADER_LOCATION = "Location";
     public static final String CONTENT_TYPE_JSON = "application/json";
     public static final String TOKEN = "Token";
-    		
+    public static final String HEADER_SESSION_TOKEN = "sessionToken";
+    
     private HttpConstants() {
         throw new AssertionError();
     }
