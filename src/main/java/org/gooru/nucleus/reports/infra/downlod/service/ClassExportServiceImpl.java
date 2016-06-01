@@ -240,18 +240,21 @@ public class ClassExportServiceImpl implements ClassExportService {
 	}
 
 	private void setDefaultUsage(String title, Map<String, Object> dataMap) {
-		dataMap.put(appendHyphen(title, ConfigConstants.COLLECTION, ExportConstants.VIEWS), 0);
-		dataMap.put(appendHyphen(title, ConfigConstants.ASSESSMENT, ExportConstants.VIEWS), 0);
-		dataMap.put(appendHyphen(title, ConfigConstants.COLLECTION, ExportConstants.TIME_SPENT), 0);
-		dataMap.put(appendHyphen(title, ConfigConstants.ASSESSMENT, ExportConstants.TIME_SPENT), 0);
-		dataMap.put(appendHyphen(title, ConfigConstants.COLLECTION, ExportConstants.SCORE_IN_PERCENTAGE), 0);
-		dataMap.put(appendHyphen(title, ConfigConstants.ASSESSMENT, ExportConstants.SCORE_IN_PERCENTAGE), 0);
+		dataMap.put(appendHyphen(ConfigConstants.COLLECTION, ExportConstants.VIEWS), 0);
+		dataMap.put(appendHyphen(ConfigConstants.COLLECTION, ExportConstants.TIME_SPENT), 0);
+		dataMap.put(appendHyphen(ConfigConstants.COLLECTION, ExportConstants.SCORE_IN_PERCENTAGE), 0);
+		dataMap.put(appendHyphen(ConfigConstants.ASSESSMENT, ExportConstants.VIEWS), 0);
+		dataMap.put(appendHyphen(ConfigConstants.ASSESSMENT, ExportConstants.TIME_SPENT), 0);
+		dataMap.put(appendHyphen(ConfigConstants.ASSESSMENT, ExportConstants.SCORE_IN_PERCENTAGE), 0);
 	}
 
 	private void setDefaultResourceUsage(String title, Map<String, Object> dataMap) {
-		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), 0);
+		/*dataMap.put(appendHyphen(title, ExportConstants.VIEWS), 0);
 		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), 0);
-		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), 0);
+		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), 0);*/
+		dataMap.put(ExportConstants.VIEWS, 0);
+		dataMap.put(ExportConstants.TIME_SPENT, 0);
+		dataMap.put(ExportConstants.SCORE_IN_PERCENTAGE, 0);
 	}
 	private String appendTilda(String... texts) {
 		StringBuffer sb = new StringBuffer();
