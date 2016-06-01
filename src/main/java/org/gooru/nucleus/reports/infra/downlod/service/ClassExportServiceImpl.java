@@ -228,7 +228,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
 		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
 		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
-		dataMap.put(appendHyphen(title, ExportConstants.TYPE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.COLLECTION_TYPE),0L));
+		dataMap.put(appendHyphen(title, ExportConstants.TYPE), usageDataSet.getStringValue(appendTilda(leastId,ConfigConstants.COLLECTION_TYPE),ConfigConstants.NA));
 	}
 	
 	private void getMetrics(ColumnList<String> usageDataSet, long views, long scoreInPercentage, long timespent) {
