@@ -219,19 +219,17 @@ public class ClassExportServiceImpl implements ClassExportService {
 			}
 		}
 		scoreInPercentage = views != 0 ? (scoreInPercentage / views) : 0;
-		dataMap.put(appendHyphen(title, collectionType, ExportConstants.VIEWS), views);
-		dataMap.put(appendHyphen(title, collectionType, ExportConstants.TIME_SPENT), timespent);
-		dataMap.put(appendHyphen(title, collectionType, ExportConstants.SCORE_IN_PERCENTAGE), scoreInPercentage);
+		dataMap.put(appendHyphen(collectionType, ExportConstants.VIEWS), views);
+		dataMap.put(appendHyphen(collectionType, ExportConstants.TIME_SPENT), timespent);
+		dataMap.put(appendHyphen(collectionType, ExportConstants.SCORE_IN_PERCENTAGE), scoreInPercentage);
 	}
 	
 	private void setMetrics(ColumnList<String> usageDataSet,Map<String, Object> dataMap, String title,String leastId){
-		dataMap.put(appendHyphen(title, ExportConstants.VIEWS), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
-		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
-		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
+		dataMap.put(ExportConstants.VIEWS, usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.VIEWS),0L));
+		dataMap.put(ExportConstants.TIME_SPENT, usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.TIME_SPENT),0L));
+		dataMap.put(ExportConstants.SCORE_IN_PERCENTAGE, usageDataSet.getLongValue(appendTilda(leastId,ConfigConstants.SCORE_IN_PERCENTAGE),0L));
 	}
 	
-	
-
 	private Map<String, Object> getDataMap() {
 		Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
 		dataMap.put(ExportConstants.FIRST_NAME, "");
@@ -249,9 +247,6 @@ public class ClassExportServiceImpl implements ClassExportService {
 	}
 
 	private void setDefaultResourceUsage(String title, Map<String, Object> dataMap) {
-		/*dataMap.put(appendHyphen(title, ExportConstants.VIEWS), 0);
-		dataMap.put(appendHyphen(title, ExportConstants.TIME_SPENT), 0);
-		dataMap.put(appendHyphen(title, ExportConstants.SCORE_IN_PERCENTAGE), 0);*/
 		dataMap.put(ExportConstants.VIEWS, 0);
 		dataMap.put(ExportConstants.TIME_SPENT, 0);
 		dataMap.put(ExportConstants.SCORE_IN_PERCENTAGE, 0);
