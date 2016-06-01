@@ -9,6 +9,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 public class AuthVerticle extends AbstractVerticle {
@@ -56,6 +57,12 @@ public class AuthVerticle extends AbstractVerticle {
 	        }
 	        return accessToken;
 	    */
+	    	if(token != null){
+	    		JsonObject j = new JsonObject();
+	    		j.put("sessionToken", token);
+	    		j.put("user", "daniel");
+	    		return j;
+	    	}
 	    	return new JsonObject();
 	    	}
 }

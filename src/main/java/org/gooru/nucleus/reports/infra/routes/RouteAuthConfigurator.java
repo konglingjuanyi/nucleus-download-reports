@@ -43,14 +43,14 @@ public class RouteAuthConfigurator implements RouteConfigurator {
             } else {            	
             	  LOG.debug("User authenticated, Fowarding request to next route.. ");
             	routingContext.next();
-            	/*
+            	
                 // If the session token is present, we send it to Message Bus
                 // for validation
                 DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000)
-                    .addHeader(MessageConstants.MSG_HEADER_OP, MessageConstants.MSG_OP_AUTH)
                     .addHeader(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
                 eBus.send(MessagebusEndpoints.MBEP_AUTH, null, options, reply -> {
                     if (reply.succeeded()) {
+                    	LOG.debug("Reply Response back" +  reply.result());
                         AuthResponseHolder responseHolder = new AuthPrefsResponseHolderBuilder(reply.result()).build();
                         // Message header would indicate whether the auth
                         // was successful or not. In addition, successful
@@ -76,7 +76,7 @@ public class RouteAuthConfigurator implements RouteConfigurator {
                         routingContext.response().setStatusCode(HttpConstants.HttpStatus.ERROR.getCode()).end();
                     }
                 });
-            */}
+            }
         });
 		
 	}
