@@ -103,12 +103,13 @@ public class ClassExportServiceImpl implements ClassExportService {
 					ColumnList<String> usageDataSet = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY,
 							usageRowKey);
 					setUserDetails(dataMap, studentId);
+					
 					setDefaultCollectionUsage(collectionTitle, dataMap);
 					setMetrics(usageDataSet, dataMap, collectionTitle, collectionId);
 					dataList.add(dataMap);
 					
 					Map<String, Object> resourceDataMap = getDataMap();
-					setUserDetails(dataMap, studentId);
+					setUserDetails(resourceDataMap, studentId);
 					exportResource(classId, courseId, unitId, lessonId, collectionId, studentId, ConfigConstants.RESOURCE, resourceDataMap);
 					resourceDataList.add(resourceDataMap);
 				}
