@@ -1,6 +1,7 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
 import org.gooru.nucleus.reports.infra.component.RedisClient;
+import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.slf4j.Logger;
@@ -32,7 +33,8 @@ public class AuthVerticle extends AbstractVerticle {
 	                        .addHeader(MessageConstants.MSG_OP_STATUS, MessageConstants.MSG_OP_STATUS_SUCCESS);
 	                    message.reply(result, options);
 	                } else {
-	                    message.reply(null);
+	                	LOG.debug("Not able to find token in redis. Sessing might be expired...");
+	                    message.fail(HttpConstants.HttpStatus.FORBIDDEN.getCode(),HttpConstants.HttpStatus.FORBIDDEN.getMessage());
 	                }
 	            });
 
@@ -51,13 +53,14 @@ public class AuthVerticle extends AbstractVerticle {
 	    
 	private JsonObject getAccessToken(String token) {
 		JsonObject accessTokenInfo = null;
-		accessTokenInfo = RedisClient.instance().getJsonObject(token);
-		if (accessTokenInfo != null) {
+		if (token != null) {
 			try {
+				accessTokenInfo = RedisClient.instance().getJsonObject(token);
+
 				int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
 				RedisClient.instance().expire(token, expireAtInSeconds);
 			} catch (Exception e) {
-				LOG.error("Exception while reading in redis", e);
+				LOG.error("Exception while writing or writing in redis", e);
 			}
 		}
 		// Temporary handling...

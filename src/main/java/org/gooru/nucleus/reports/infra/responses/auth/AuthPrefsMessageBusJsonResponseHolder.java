@@ -38,7 +38,7 @@ public class AuthPrefsMessageBusJsonResponseHolder implements AuthResponseHolder
     @Override
     public boolean isAnonymous() {
         JsonObject jsonObject = (JsonObject) message.body();
-        String userId = jsonObject.getString(MessageConstants.MSG_USER_ID);
+        String userId = jsonObject != null ? jsonObject.getString(MessageConstants.MSG_USER_ID) : null;
         return !(userId != null && !userId.isEmpty() && !userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS));
     }
 }

@@ -24,16 +24,20 @@ public class RedisClient implements Initializer, Finalizer {
 		JsonObject redisConfig = config.getJsonObject(ConfigConstants.REDIS);
 		LOGGER.debug("redis host : {}", redisConfig.getString(ConfigConstants.HOST));
 		LOGGER.debug("redis port : {}", redisConfig.getInteger(ConfigConstants.PORT));
-		
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(1000);
-        jedisPoolConfig.setMaxIdle(10);
-        jedisPoolConfig.setMinIdle(1);
-        jedisPoolConfig.setMaxWaitMillis(30000);
-        jedisPoolConfig.setTestOnBorrow(true);
-        pool = new JedisPool(jedisPoolConfig, redisConfig.getString(ConfigConstants.HOST),
-            redisConfig.getInteger(ConfigConstants.PORT));
-        LOGGER.debug("redis initialized successfully...");
+
+		JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+		jedisPoolConfig.setMaxTotal(1000);
+		jedisPoolConfig.setMaxIdle(10);
+		jedisPoolConfig.setMinIdle(1);
+		jedisPoolConfig.setMaxWaitMillis(30000);
+		jedisPoolConfig.setTestOnBorrow(true);
+		try {
+			pool = new JedisPool(jedisPoolConfig, redisConfig.getString(ConfigConstants.HOST),
+					redisConfig.getInteger(ConfigConstants.PORT));
+		} catch (Exception e) {
+			LOGGER.error("Exception while initializing redis....", e);
+		}
+		LOGGER.debug("redis initialized successfully...");
 	}
 
 	 public static RedisClient instance() {
