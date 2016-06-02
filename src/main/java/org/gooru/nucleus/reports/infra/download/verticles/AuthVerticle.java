@@ -20,7 +20,7 @@ public class AuthVerticle extends AbstractVerticle {
 	    public void start(Future<Void> voidFuture) throws Exception {
 	        EventBus eb = vertx.eventBus();
 	        eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
-	            LOG.debug("Received message: " + message.body());
+	            LOG.debug("Received message: " + message.headers());
 	            vertx.executeBlocking(future -> {
 	                JsonObject result = getAccessToken(message.headers().get(MessageConstants.MSG_HEADER_TOKEN));
 	                future.complete(result);
@@ -59,7 +59,7 @@ public class AuthVerticle extends AbstractVerticle {
 	    	if(token != null){
 	    		JsonObject j = new JsonObject();
 	    		j.put("sessionToken", token);
-	    		j.put("user", "daniel");
+	    		j.put("user_id", "daniel");
 	    		return j;
 	    	}
 	    	return new JsonObject();
