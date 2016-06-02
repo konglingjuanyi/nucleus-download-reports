@@ -1,6 +1,7 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
 import org.gooru.nucleus.reports.infra.component.RedisClient;
+import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
@@ -26,17 +27,23 @@ public class AuthVerticle extends AbstractVerticle {
 	            vertx.executeBlocking(future -> {
 	                JsonObject result = getAccessToken(message.headers().get(MessageConstants.MSG_HEADER_TOKEN));
 	                future.complete(result);
-	            }, res -> {
-	                if (res.result() != null) {
-	                    JsonObject result = (JsonObject) res.result();
-	                    DeliveryOptions options = new DeliveryOptions()
-	                        .addHeader(MessageConstants.MSG_OP_STATUS, MessageConstants.MSG_OP_STATUS_SUCCESS);
-	                    message.reply(result, options);
-	                } else {
-	                	LOG.debug("Not able to find token in redis. Sessing might be expired...");
-	                    message.fail(HttpConstants.HttpStatus.FORBIDDEN.getCode(),HttpConstants.HttpStatus.FORBIDDEN.getMessage());
-	                }
-	            });
+			}, res -> {
+				if (res.result() != null) {
+					JsonObject result = (JsonObject) res.result();
+					DeliveryOptions options = null;
+					if (!result.isEmpty()) {
+						new DeliveryOptions().addHeader(MessageConstants.MSG_OP_STATUS,
+								MessageConstants.MSG_OP_STATUS_SUCCESS);
+					} else {
+						new DeliveryOptions().addHeader(MessageConstants.MSG_OP_STATUS,
+								MessageConstants.MSG_OP_STATUS_ERROR);
+					}
+					message.reply(result, options);
+				} else {
+					LOG.debug("Unhandled exception. It could be redis issue...");
+					message.fail(HttpConstants.HttpStatus.ERROR.getCode(), HttpConstants.HttpStatus.ERROR.getMessage());
+				}
+			});
 
 	        }).completionHandler(result -> {
 	            if (result.succeeded()) {
@@ -56,19 +63,18 @@ public class AuthVerticle extends AbstractVerticle {
 		if (token != null) {
 			try {
 				accessTokenInfo = RedisClient.instance().getJsonObject(token);
-
-				int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
-				RedisClient.instance().expire(token, expireAtInSeconds);
+				if (accessTokenInfo != null) {
+					int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
+					RedisClient.instance().expire(token, expireAtInSeconds);
+				} else{
+					accessTokenInfo = new JsonObject();
+					LOG.debug("Not able to find token in redis. Sessing might be expired...");
+				}
 			} catch (Exception e) {
 				LOG.error("Exception while writing or writing in redis", e);
 			}
 		}
-		// Temporary handling...
-		if (accessTokenInfo == null) {
-			accessTokenInfo = new JsonObject();
-			accessTokenInfo.put("sessionToken", token);
-			accessTokenInfo.put("user_id", "daniel");
-		}
+		
 		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
 		return accessTokenInfo;
 	}
