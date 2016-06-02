@@ -53,16 +53,20 @@ public class AuthVerticle extends AbstractVerticle {
 		JsonObject accessTokenInfo = null;
 		accessTokenInfo = RedisClient.instance().getJsonObject(token);
 		if (accessTokenInfo != null) {
-			int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
-			RedisClient.instance().expire(token, expireAtInSeconds);
+			try {
+				int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
+				RedisClient.instance().expire(token, expireAtInSeconds);
+			} catch (Exception e) {
+				LOG.error("Exception while reading in redis", e);
+			}
 		}
-		//Temporary handling...
+		// Temporary handling...
 		if (accessTokenInfo == null) {
 			accessTokenInfo = new JsonObject();
 			accessTokenInfo.put("sessionToken", token);
 			accessTokenInfo.put("user_id", "daniel");
 		}
-		LOG.debug("accessTokenInfo : {}" , accessTokenInfo);
+		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
 		return accessTokenInfo;
 	}
 }
