@@ -34,7 +34,7 @@ public final class HttpConstants {
         TOO_LARGE(413, "Request Entity Too Large"),
         TOO_MANY_REQUESTS(429, "Too Many Requests"),
         ERROR(500, "Internal Server Error");
-
+    	
         private final int code;
         private final String message;
 

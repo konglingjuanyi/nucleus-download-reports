@@ -13,7 +13,8 @@ public class AuthPrefsMessageBusJsonResponseHolder implements AuthResponseHolder
     private static final Logger LOG = LoggerFactory.getLogger(AuthResponseHolder.class);
     private final Message<Object> message;
     private boolean isAuthorized = false;
-
+    private String userId = null;
+    
     public AuthPrefsMessageBusJsonResponseHolder(Message<Object> message) {
         this.message = message;
         if (message != null && message.body() != null) {
@@ -36,9 +37,15 @@ public class AuthPrefsMessageBusJsonResponseHolder implements AuthResponseHolder
     }
 
     @Override
+    public String getUserId(){
+    	return userId;
+    }
+    
+    @Override
     public boolean isAnonymous() {
         JsonObject jsonObject = (JsonObject) message.body();
-        String userId = jsonObject != null ? jsonObject.getString(MessageConstants.MSG_USER_ID) : null;
-        return !(userId != null && !userId.isEmpty() && !userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS));
+        String userUId = jsonObject != null ? jsonObject.getString(MessageConstants.MSG_USER_ID) : null;
+        this.userId = userUId;
+        return !(userUId != null && !userUId.isEmpty() && !userUId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS));
     }
 }

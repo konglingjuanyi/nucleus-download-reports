@@ -65,10 +65,13 @@ public final class ConfigConstants {
 	public static final String _QUESTION_STATUS = "question_status";
 	public static final String _TEXT = "text";
 
-	 public static final String PORT = "port";
-	 public static final String HOST = "host";
-	 public static final String REDIS = "redis.config";
-	    
+	public static final String PORT = "port";
+	public static final String HOST = "host";
+	public static final String REDIS = "redis.config";
+	
+	public static final String ERROR_CODE = "error.code";
+	public static final String ERROR_MSG = "error.msg";
+	 
     private ConfigConstants() {
         throw new AssertionError();
     }

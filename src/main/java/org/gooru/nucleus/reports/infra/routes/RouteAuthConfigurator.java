@@ -61,6 +61,7 @@ public class RouteAuthConfigurator implements RouteConfigurator {
                                     .setStatusMessage(HttpConstants.HttpStatus.FORBIDDEN.getMessage()).end();
                             } else {
                                 LOG.debug("User authenticated, Fowarding request to next route.. ");
+                                routingContext.request().params().add(RouteConstants.USER_ID, responseHolder.getUserId());
                                 routingContext.next();
                             }
                         } else {

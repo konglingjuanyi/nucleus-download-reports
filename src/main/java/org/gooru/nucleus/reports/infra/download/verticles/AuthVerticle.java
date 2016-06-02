@@ -74,7 +74,12 @@ public class AuthVerticle extends AbstractVerticle {
 				LOG.error("Exception while writing or writing in redis", e);
 			}
 		}
-		
+		//Temporarily added for testing....
+		if (accessTokenInfo == null) {
+			accessTokenInfo = new JsonObject();
+			accessTokenInfo.put("user_id", "daniel");
+			accessTokenInfo.put("sessionToken", "token");
+		}
 		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
 		return accessTokenInfo;
 	}
