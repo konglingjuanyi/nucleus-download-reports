@@ -37,7 +37,9 @@ public class AuthVerticle extends AbstractVerticle {
 
 	        }).completionHandler(result -> {
 	            if (result.succeeded()) {
-	               
+	            	LOG.debug("Application component initialization successful");
+	            	LOG.info("Auth end point ready to listen");
+	            	voidFuture.complete();
 	            } else {
 	                LOG.error("Error registering the auth handler. Halting the Auth machinery");
 	                voidFuture.fail(result.cause());
@@ -45,9 +47,7 @@ public class AuthVerticle extends AbstractVerticle {
 	            }
 	        });
 	    }
-
-
-
+	    
 	    private JsonObject getAccessToken(String token) {/*
 	        JsonObject accessToken = RedisClient.instance().getJsonObject(token);
 	        if (accessToken != null) {
