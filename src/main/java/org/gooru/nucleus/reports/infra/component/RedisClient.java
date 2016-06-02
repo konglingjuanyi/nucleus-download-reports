@@ -20,9 +20,11 @@ public class RedisClient implements Initializer, Finalizer {
 	 
 	@Override
 	public void initializeComponent(Vertx vertx, JsonObject config) {
-		LOGGER.debug("config : {}", config.toString() );
 
 		JsonObject redisConfig = config.getJsonObject(ConfigConstants.REDIS);
+		LOGGER.debug("redis host : {}", redisConfig.getString(ConfigConstants.HOST));
+		LOGGER.debug("redis port : {}", redisConfig.getInteger(ConfigConstants.PORT));
+		
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(1000);
         jedisPoolConfig.setMaxIdle(10);
@@ -31,7 +33,7 @@ public class RedisClient implements Initializer, Finalizer {
         jedisPoolConfig.setTestOnBorrow(true);
         pool = new JedisPool(jedisPoolConfig, redisConfig.getString(ConfigConstants.HOST),
             redisConfig.getInteger(ConfigConstants.PORT));
-		
+        LOGGER.debug("redis initialized successfully...");
 	}
 
 	 public static RedisClient instance() {

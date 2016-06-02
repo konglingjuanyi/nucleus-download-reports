@@ -1,5 +1,6 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
+import org.gooru.nucleus.reports.infra.component.RedisClient;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.slf4j.Logger;
@@ -48,20 +49,20 @@ public class AuthVerticle extends AbstractVerticle {
 	        });
 	    }
 	    
-	    private JsonObject getAccessToken(String token) {/*
-	        JsonObject accessToken = RedisClient.instance().getJsonObject(token);
-	        if (accessToken != null) {
-	            int expireAtInSeconds = accessToken.getInteger(ACCESS_TOKEN_VALIDITY);
-	            RedisClient.instance().expire(token, expireAtInSeconds);
-	        }
-	        return accessToken;
-	    */
-	    	if(token != null){
-	    		JsonObject j = new JsonObject();
-	    		j.put("sessionToken", token);
-	    		j.put("user_id", "daniel");
-	    		return j;
-	    	}
-	    	return new JsonObject();
-	    	}
+	private JsonObject getAccessToken(String token) {
+		JsonObject accessTokenInfo = null;
+		accessTokenInfo = RedisClient.instance().getJsonObject(token);
+		if (accessTokenInfo != null) {
+			int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
+			RedisClient.instance().expire(token, expireAtInSeconds);
+		}
+		//Temporary handling...
+		if (accessTokenInfo == null) {
+			accessTokenInfo = new JsonObject();
+			accessTokenInfo.put("sessionToken", token);
+			accessTokenInfo.put("user_id", "daniel");
+		}
+		LOG.debug("accessTokenInfo : {}" , accessTokenInfo);
+		return accessTokenInfo;
+	}
 }
