@@ -13,7 +13,7 @@ public class RouteConfiguration implements Iterable<RouteConfigurator> {
 
     public RouteConfiguration() {
         List<RouteConfigurator> configurators = new ArrayList<>(32);
-       // configurators.add(new RouteAuthConfigurator());
+        configurators.add(new RouteAuthConfigurator());
         // First the global handler to enable to body reading etc
         configurators.add(new RouteGlobalConfigurator());
         // For rest of handlers, Auth should always be first one
