@@ -30,8 +30,7 @@ ext {
     slf4jVersion = '1.7.12'
     junitVersion = '4.12'
     logbackVersion = '1.0.13'
-    hikariVersion = '2.4.3'
-    postgresVersion = '9.4-1206-jdbc42'
+    redisVersion = '2.8.0'
 }
 
 version = "0.1-snapshot"
@@ -55,12 +54,8 @@ dependencies {
 
     // Other dependencies
     compile "ch.qos.logback:logback-classic:${logbackVersion}"
-    compile "com.zaxxer:HikariCP:${hikariVersion}"
-    compile "org.postgresql:postgresql:${postgresVersion}"
-    // active jdbc
-    compile 'org.javalite:activejdbc:1.4.11'
-    compile 'org.javalite:activejdbc-instrumentation:1.4.11'
-	
+    compile "redis.clients:jedis:${redisVersion}"
+    
 	//Astyanax and datstax driver
 	compile 'com.datastax.cassandra:cassandra-driver-core:3.0.0'
 	compile 'com.netflix.astyanax:astyanax:3.9.0'

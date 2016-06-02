@@ -1,10 +1,14 @@
 {
   "comment": "This is bundled JSON file. Idea is that we should externalize this also as part of build. Currently this is going to hold the dev env information",
+  "redis.config" : {
+    "host" : "localhost",
+    "port" : 6379
+  },
   "defaultDataSource": {
-    	"cassandra.seeds":"184.72.16.135",
+    	"cassandra.seeds":"127.0.0.1",
 	"cassandra.cluster":"archive",
 	"cassandra.datacenter":"datacenter1",
-	"cassandra.keyspace":"insights_qa"
+	"cassandra.keyspace":"event_logger_insights"
   },
 "org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle": {
     "instances": 1,

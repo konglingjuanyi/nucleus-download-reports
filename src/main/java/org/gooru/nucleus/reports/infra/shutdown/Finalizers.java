@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.gooru.nucleus.reports.infra.component.CassandraClient;
+import org.gooru.nucleus.reports.infra.component.RedisClient;
 
 public class Finalizers implements Iterable<Finalizer> {
 
@@ -13,6 +14,7 @@ public class Finalizers implements Iterable<Finalizer> {
     public Finalizers() {
         List<Finalizer> finalizers = new ArrayList<>();
         finalizers.add(CassandraClient.getInstance());
+        finalizers.add(RedisClient.instance());
         internalIterator = finalizers.iterator();
     }
 

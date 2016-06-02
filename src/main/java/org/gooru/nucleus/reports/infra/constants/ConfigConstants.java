@@ -64,7 +64,11 @@ public final class ConfigConstants {
 	public static final String _SESSION_ID = "session_id";
 	public static final String _QUESTION_STATUS = "question_status";
 	public static final String _TEXT = "text";
-	
+
+	 public static final String PORT = "port";
+	 public static final String HOST = "host";
+	 public static final String REDIS = "redis.config";
+	    
     private ConfigConstants() {
         throw new AssertionError();
     }

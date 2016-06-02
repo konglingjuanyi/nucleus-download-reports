@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.gooru.nucleus.reports.infra.component.CassandraClient;
+import org.gooru.nucleus.reports.infra.component.RedisClient;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
 
 public class Initializers implements Iterable<Initializer> {
@@ -15,6 +16,7 @@ public class Initializers implements Iterable<Initializer> {
         List<Initializer> initializers = new ArrayList<>();
         initializers.add(CassandraClient.getInstance());
         initializers.add(UtilityManager.getInstance());
+        initializers.add(RedisClient.instance());
         internalIterator = initializers.iterator();
     }
 
