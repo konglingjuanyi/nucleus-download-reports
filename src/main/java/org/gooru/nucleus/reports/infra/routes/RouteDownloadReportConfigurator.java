@@ -28,8 +28,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RouteDownloadReportConfigurator.class);
 	private CqlCassandraDao cqlDAO = CqlCassandraDao.instance();
-	private String userRole = null;
-	 
+
 	@Override
 	public void configureRoutes(Vertx vertx, Router router, JsonObject config) {
 		final EventBus eb = vertx.eventBus();
@@ -39,12 +38,11 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			String userId = routingContext.request().getParam(RouteConstants.USER_ID);
 			LOGGER.debug("classId : " + classId + " - courseId:" + courseId + " - userId : " + userId);
-			if (!isTeacher(classId, userId)) {
-				if (!isStudent(classId, userId)) {
-					LOGGER.debug("user is not a valide teacher or student...");
-					routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
-							.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
-				}
+			String userRole = getUserRole(classId, userId);
+			if (userRole == null) {
+				LOGGER.debug("user is not a valid teacher or student...");
+				routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
+						.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
 			} else {
 				LOGGER.debug("User authorized. Process CSV generation...");
 				DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
@@ -62,20 +60,20 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String userId = routingContext.request().getParam(RouteConstants.USER_ID);
 			LOGGER.debug("classId : " + classId + " - courseId:" + courseId + " - userId : " + userId);
 			try {
-				if (!isTeacher(classId, userId)) {
-					if (!isStudent(classId, userId)) {
-						LOGGER.debug("user is not a valide teacher or student...");
-						routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
-								.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
-					}
+				String userRole = getUserRole(classId, userId);
+				if (userRole == null) {
+					LOGGER.debug("user is not a valid teacher or student...");
+					routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
+							.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
 				} else {
 					LOGGER.debug("User authorized. Dowloading ZIP file...");
-					Buffer zipFile = vertx.fileSystem().readFileBlocking(
-							config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId +ConfigConstants.HYPHEN+userId+ ConfigConstants.ZIP_EXT);
+					Buffer zipFile = vertx.fileSystem()
+							.readFileBlocking(config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId
+									+ ConfigConstants.HYPHEN + userId + ConfigConstants.ZIP_EXT);
 					routingContext.response().putHeader("Content-Length", "" + zipFile.length());
 					routingContext.response().putHeader("content-type", "application/zip");
-					routingContext.response().putHeader("Content-Disposition",
-							"attachment; filename=\"" + classId +ConfigConstants.HYPHEN+userId+ ConfigConstants.ZIP_EXT + "\"");
+					routingContext.response().putHeader("Content-Disposition", "attachment; filename=\"" + classId
+							+ ConfigConstants.HYPHEN + userId + ConfigConstants.ZIP_EXT + "\"");
 					routingContext.response().write(zipFile);
 					routingContext.response().setStatusCode(200);
 				}
@@ -87,6 +85,17 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 		});
 
 	}
+
+	private String getUserRole(String classId, String userId) {
+		String userRole = null;
+		if (isTeacher(classId, userId)) {
+			userRole = MessageConstants.MSG_TEACHER;
+		} else if (isStudent(classId, userId)) {
+			userRole = MessageConstants.MSG_TEACHER;
+		}
+		return userRole;
+	}
+
 	private boolean isTeacher(String classId, String userId) {
 		boolean isTeacher = false;
 		String teacherId = null;
@@ -96,23 +105,20 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			LOGGER.debug("teacherId : " + teacherId);
 		}
 		if (teacherId != null && userId.equalsIgnoreCase(teacherId)) {
-			userRole = MessageConstants.MSG_TEACHER;
 			isTeacher = true;
 		}
 		LOGGER.debug("isTeacher : " + isTeacher);
 		return isTeacher;
 	}
+
 	private boolean isStudent(String classId, String userId) {
 		boolean isStudent = false;
-		String studentId = null;
 		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.USER_GROUP_ASSOCIATION, classId);
 		if (classData != null && classData.getColumnByName(userId) != null) {
-			LOGGER.debug("studentId : " + userId);
 			isStudent = true;
-			userRole = MessageConstants.MSG_STUDENT;
 		}
-		
-		LOGGER.debug("studentId : " + studentId);
+
+		LOGGER.debug("isStudent : " + isStudent);
 		return isStudent;
 	}
 }
