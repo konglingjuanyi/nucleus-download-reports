@@ -12,7 +12,6 @@ import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.ExportConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
-import org.gooru.nucleus.reports.infra.constants.RouteConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,9 +180,9 @@ public class ClassExportServiceImpl implements ClassExportService {
 
 	private List<String> getClassMembersList(String classId, String userId, String userRole) {
 		List<String> classMembersList = null;
-		if (StringUtils.isBlank(userRole) && userRole.equalsIgnoreCase(MessageConstants.MSG_TEACHER)) {
+		if (StringUtils.isNotBlank(userRole) && userRole.equalsIgnoreCase(MessageConstants.MSG_TEACHER)) {
 			classMembersList = getClassMembers(classId);
-		} else if(StringUtils.isBlank(userRole) && userRole.equalsIgnoreCase(MessageConstants.MSG_STUDENT)) {
+		} else if(StringUtils.isNotBlank(userRole) && userRole.equalsIgnoreCase(MessageConstants.MSG_STUDENT)) {
 			classMembersList = new ArrayList<String>();
 			classMembersList.add(userId);
 		}
