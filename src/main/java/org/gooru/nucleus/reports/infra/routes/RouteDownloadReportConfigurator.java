@@ -106,14 +106,12 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 		boolean isStudent = false;
 		String studentId = null;
 		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.USER_GROUP_ASSOCIATION, classId);
-		if (classData != null) {
-			studentId = classData.getColumnByName(userId).getName();
-			LOGGER.debug("studentId : " + studentId);
-		}
-		if (studentId != null) {
+		if (classData != null && classData.getColumnByName(userId) != null) {
+			LOGGER.debug("studentId : " + userId);
 			isStudent = true;
 			userRole = MessageConstants.MSG_STUDENT;
 		}
+		
 		LOGGER.debug("studentId : " + studentId);
 		return isStudent;
 	}

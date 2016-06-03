@@ -32,10 +32,7 @@ public class RouteAuthConfigurator implements RouteConfigurator {
         	if (StringUtils.isBlank(sessionToken)) {
         		sessionToken = routingContext.request().getParam(HttpConstants.HEADER_SESSION_TOKEN);
         	}
-        	String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
-
         	LOG.info("sessionToken : " + sessionToken);
-            LOG.info("classId : " + classId);
             // If the session token is null or absent, we send an error to
             // client
             if (sessionToken == null || sessionToken.isEmpty()) {
