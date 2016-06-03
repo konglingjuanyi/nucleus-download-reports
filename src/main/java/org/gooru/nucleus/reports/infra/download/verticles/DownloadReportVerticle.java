@@ -41,7 +41,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				MessageResponse result = null;
 				try {
 					JsonObject body = getHttpBody(message.body().toString());
-					if (StringUtils.isNotBlank(body.getString(RouteConstants.USER_ID))) {
+					if (StringUtils.isBlank(body.getString(RouteConstants.USER_ID))) {
 						LOGGER.debug("User ID is null.....");
 						result = MessageResponseFactory.createForbiddenResponse(MessageConstants.MSG_USER_NULL);
 					} else {

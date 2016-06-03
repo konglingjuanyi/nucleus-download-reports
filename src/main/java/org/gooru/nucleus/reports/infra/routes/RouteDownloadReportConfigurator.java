@@ -43,14 +43,14 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 				if (!isStudent(classId, userId)) {
 					LOGGER.info("user is not a valide teacher or student...");
 					routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
-					.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
+							.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
 				}
 			} else {
-				LOGGER.info("User authrized. Process csv generation...");
+				LOGGER.info("User authorized. Process CSV generation...");
 				DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
 				routingContext.response().putHeader("content-type", "application/json; charset=utf-8");
+				routingContext.request().params().add(RouteConstants.USER_ROLE, userRole);
 				JsonObject rru = new RouteRequestUtility().getBodyForMessage(routingContext);
-				rru.put(RouteConstants.USER_ROLE, userRole);
 				eb.send(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, rru, options,
 						reply -> new RouteResponseUtility().responseHandler(routingContext, reply, LOGGER));
 			}
@@ -62,14 +62,23 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String userId = routingContext.request().getParam(RouteConstants.USER_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId + " - userId : " + userId);
 			try {
-				Buffer zipFile = vertx.fileSystem().readFileBlocking(
-						config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId + ConfigConstants.ZIP_EXT);
-				routingContext.response().putHeader("Content-Length", "" + zipFile.length());
-				routingContext.response().putHeader("content-type", "application/zip");
-				routingContext.response().putHeader("Content-Disposition",
-						"attachment; filename=\"" + classId + ConfigConstants.ZIP_EXT + "\"");
-				routingContext.response().write(zipFile);
-				routingContext.response().setStatusCode(200);
+				if (!isTeacher(classId, userId)) {
+					if (!isStudent(classId, userId)) {
+						LOGGER.info("user is not a valide teacher or student...");
+						routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
+								.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
+					}
+				} else {
+					LOGGER.info("User authorized. Process CSV generation...");
+					Buffer zipFile = vertx.fileSystem().readFileBlocking(
+							config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId + ConfigConstants.ZIP_EXT);
+					routingContext.response().putHeader("Content-Length", "" + zipFile.length());
+					routingContext.response().putHeader("content-type", "application/zip");
+					routingContext.response().putHeader("Content-Disposition",
+							"attachment; filename=\"" + classId + ConfigConstants.ZIP_EXT + "\"");
+					routingContext.response().write(zipFile);
+					routingContext.response().setStatusCode(200);
+				}
 			} catch (Exception e) {
 				routingContext.response().setStatusCode(404);
 				LOGGER.error("Exception ", e);
