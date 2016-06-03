@@ -58,10 +58,6 @@ public class DownloadReportVerticle extends AbstractVerticle {
 									LOGGER.info(originalDirectory.getName() + " is going to delete..");
 									FileUtils.deleteDirectory(originalDirectory);
 								}
-							  vertx.fileSystem().deleteBlocking(config().
-							  getString( ConfigConstants.FILE_SAVE_REAL_PATH) +
-							  ConfigConstants.SLASH + fileName);
-							 
 						} else {
 							JsonObject resultObject = new JsonObject();
 							resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(fileName));
