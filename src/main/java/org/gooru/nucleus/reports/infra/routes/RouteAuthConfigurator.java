@@ -32,8 +32,10 @@ public class RouteAuthConfigurator implements RouteConfigurator {
         	if (StringUtils.isBlank(sessionToken)) {
         		sessionToken = routingContext.request().getParam(HttpConstants.HEADER_SESSION_TOKEN);
         	}
-            LOG.info("sessionToken : " + sessionToken);
+        	String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 
+        	LOG.info("sessionToken : " + sessionToken);
+            LOG.info("classId : " + classId);
             // If the session token is null or absent, we send an error to
             // client
             if (sessionToken == null || sessionToken.isEmpty()) {
@@ -62,7 +64,6 @@ public class RouteAuthConfigurator implements RouteConfigurator {
                             } else {
                                 LOG.debug("User authenticated, Fowarding request to next route.. ");
                                 routingContext.request().params().add(RouteConstants.USER_ID, responseHolder.getUserId());
-                                routingContext.request().params().add(RouteConstants.IS_STUDENT, responseHolder.getUserRole());
                                 routingContext.next();
                             }
                         } else {

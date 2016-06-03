@@ -1,16 +1,12 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
 import org.gooru.nucleus.reports.infra.component.RedisClient;
-import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
-import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.gooru.nucleus.reports.infra.downlod.service.CqlCassandraDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.netflix.astyanax.model.ColumnList;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -32,23 +28,9 @@ public class AuthVerticle extends AbstractVerticle {
 	        eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
 	            LOG.debug("Received message: " + message.headers());
 			vertx.executeBlocking(future -> {
-				String classId = message.headers().get(MessageConstants.MSG_CLASS_ID);
 				String token = message.headers().get(MessageConstants.MSG_HEADER_TOKEN);
 				JsonObject result = getAccessToken(token);
 
-				if (result != null) {
-					String userId = result.getString(MessageConstants.MSG_USER_ID);
-					// Check if user is a teacher
-					result.put(MessageConstants.MSG_IS_TEACHER, isTeacher(classId, userId));
-					result.put(MessageConstants.MSG_IS_STUDENT, isStudent(classId, userId));
-					
-					if (!result.getBoolean(MessageConstants.MSG_IS_TEACHER)) {
-						if (!result.getBoolean(MessageConstants.MSG_IS_STUDENT)) {
-							result = null;
-							LOG.info("user is not a valide teacher or student...");
-						}
-					}
-				}
 				future.complete(result);
 			}, res -> {
 				if (res.result() != null) {
@@ -100,32 +82,5 @@ public class AuthVerticle extends AbstractVerticle {
 		
 		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
 		return accessTokenInfo;
-	}
-	
-	private boolean isTeacher(String classId, String userId) {
-		boolean isTeacher = false;
-		String teacherId = null;
-		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.CLASS, classId);
-		if (classData != null) {
-			teacherId = classData.getStringValue(ConfigConstants._CREATOR_UID, null);
-			LOG.debug("teacherId : " + teacherId);
-		}
-		if (teacherId != null && userId.equalsIgnoreCase(teacherId)) {
-			isTeacher = true;
-		}
-		return isTeacher;
-	}
-	private boolean isStudent(String classId, String userId) {
-		boolean isStudent = false;
-		String studentId = null;
-		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.USER_GROUP_ASSOCIATION, classId);
-		if (classData != null) {
-			studentId = classData.getColumnByName(userId).getName();
-			LOG.debug("studentId : " + studentId);
-		}
-		if (studentId != null) {
-			isStudent = true;
-		}
-		return isStudent;
 	}
 }

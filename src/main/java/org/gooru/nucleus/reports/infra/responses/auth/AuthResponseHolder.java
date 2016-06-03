@@ -8,7 +8,5 @@ public interface AuthResponseHolder {
 	    boolean isAnonymous();
 	    
 	    String getUserId();
-	    
-	    String getUserRole();
-	 
+	    	 
 }
