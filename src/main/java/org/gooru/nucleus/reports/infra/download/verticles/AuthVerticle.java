@@ -1,6 +1,5 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
-import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.component.RedisClient;
 import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
@@ -11,8 +10,6 @@ import org.gooru.nucleus.reports.infra.downlod.service.CqlCassandraDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.astyanax.connectionpool.OperationResult;
-import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ColumnList;
 
 import io.vertx.core.AbstractVerticle;
@@ -42,8 +39,11 @@ public class AuthVerticle extends AbstractVerticle {
 				if (result != null) {
 					String userId = result.getString(MessageConstants.MSG_USER_ID);
 					// Check if user is a teacher
-					if (!isTeacher(classId, userId)) {
-						if (!isStudent(classId, userId)) {
+					result.put(MessageConstants.MSG_IS_TEACHER, isTeacher(classId, userId));
+					result.put(MessageConstants.MSG_IS_STUDENT, isStudent(classId, userId));
+					
+					if (!result.getBoolean(MessageConstants.MSG_IS_TEACHER)) {
+						if (!result.getBoolean(MessageConstants.MSG_IS_STUDENT)) {
 							result = null;
 							LOG.info("user is not a valide teacher or student...");
 						}
@@ -113,6 +113,7 @@ public class AuthVerticle extends AbstractVerticle {
 		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY, classId);
 		if (classData != null) {
 			teacherId = classData.getStringValue(ConfigConstants._CREATOR_UID, null);
+			LOG.debug("teacherId : " + teacherId);
 		}
 		if (teacherId != null && userId.equalsIgnoreCase(teacherId)) {
 			isTeacher = true;
@@ -125,6 +126,7 @@ public class AuthVerticle extends AbstractVerticle {
 		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.USER_GROUP_ASSOCIATION, classId);
 		if (classData != null) {
 			studentId = classData.getColumnByName(userId).getName();
+			LOG.debug("studentId : " + studentId);
 		}
 		if (studentId != null) {
 			isStudent = true;

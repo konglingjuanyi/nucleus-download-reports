@@ -11,6 +11,7 @@ import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.ExportConstants;
+import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.RouteConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +34,15 @@ public class ClassExportServiceImpl implements ClassExportService {
 	protected final Logger LOG = LoggerFactory.getLogger(ClassExportServiceImpl.class);
 
 	@Override
-	public JsonObject exportCsv(String classId, String courseId, String userId, String zipFileName) {
+	public JsonObject exportCsv(String classId, String courseId, String userId, String userRole, String zipFileName) {
 		try {
 			if (StringUtils.isBlank(zipFileName)) {
 				zipFileName = appendHyphen(classId,userId);
 			}
 			JsonObject result = new JsonObject();
 			LOG.debug("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);
-			List<String> classMembersList = getClassMembersList(classId, userId);
+			List<String> classMembersList = getClassMembersList(classId, userId, userRole);
+			LOG.debug("classMembersList: " + classMembersList);
 			String courseTitle = getContentTitle(courseId);
 			this.export(classId, courseId, null, null, null, ConfigConstants.COURSE,courseTitle,null,null,null, classMembersList, zipFileName);
 			for (String unitId : getCollectionItems(courseId)) {
@@ -177,11 +179,11 @@ public class ClassExportServiceImpl implements ClassExportService {
 		return title;
 	}
 
-	private List<String> getClassMembersList(String classId, String userId) {
+	private List<String> getClassMembersList(String classId, String userId, String userRole) {
 		List<String> classMembersList = null;
-		if (StringUtils.isBlank(userId)) {
+		if (StringUtils.isBlank(userRole) && userRole.equalsIgnoreCase(MessageConstants.MSG_TEACHER)) {
 			classMembersList = getClassMembers(classId);
-		} else {
+		} else if(StringUtils.isBlank(userRole) && userRole.equalsIgnoreCase(MessageConstants.MSG_STUDENT)) {
 			classMembersList = new ArrayList<String>();
 			classMembersList.add(userId);
 		}

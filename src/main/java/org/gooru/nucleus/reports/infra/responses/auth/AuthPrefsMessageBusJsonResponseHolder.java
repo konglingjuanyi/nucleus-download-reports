@@ -14,6 +14,7 @@ public class AuthPrefsMessageBusJsonResponseHolder implements AuthResponseHolder
     private final Message<Object> message;
     private boolean isAuthorized = false;
     private String userId = null;
+    private String userRole = null;
     
     public AuthPrefsMessageBusJsonResponseHolder(Message<Object> message) {
         this.message = message;
@@ -27,6 +28,7 @@ public class AuthPrefsMessageBusJsonResponseHolder implements AuthResponseHolder
             LOG.debug("Received header from Auth response : {}", result);
             if (result != null && result.equalsIgnoreCase(MessageConstants.MSG_OP_STATUS_SUCCESS)) {
                 isAuthorized = true;
+                setUserRole();
             }
         }
     }
@@ -42,10 +44,26 @@ public class AuthPrefsMessageBusJsonResponseHolder implements AuthResponseHolder
     }
     
     @Override
+    public String getUserRole(){
+    	return userRole;
+    }
+    
+    @Override
     public boolean isAnonymous() {
         JsonObject jsonObject = (JsonObject) message.body();
         String userUId = jsonObject != null ? jsonObject.getString(MessageConstants.MSG_USER_ID) : null;
         this.userId = userUId;
         return !(userUId != null && !userUId.isEmpty() && !userUId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS));
+    }
+    private void setUserRole(){
+    	JsonObject jsonObject = (JsonObject) message.body();
+    	if(jsonObject != null){
+    		if(jsonObject.containsKey(MessageConstants.MSG_IS_TEACHER) && jsonObject.getBoolean(MessageConstants.MSG_IS_TEACHER)){
+    			userRole = MessageConstants.MSG_TEACHER;
+    		}else if(jsonObject.containsKey(MessageConstants.MSG_IS_STUDENT) && jsonObject.getBoolean(MessageConstants.MSG_IS_STUDENT)){
+    			userRole = MessageConstants.MSG_STUDENT;
+    		}
+    		
+    	}
     }
 }

@@ -62,6 +62,7 @@ public class RouteAuthConfigurator implements RouteConfigurator {
                             } else {
                                 LOG.debug("User authenticated, Fowarding request to next route.. ");
                                 routingContext.request().params().add(RouteConstants.USER_ID, responseHolder.getUserId());
+                                routingContext.request().params().add(RouteConstants.IS_STUDENT, responseHolder.getUserRole());
                                 routingContext.next();
                             }
                         } else {

@@ -8,6 +8,6 @@ public interface ClassExportService {
 		 return new ClassExportServiceImpl();
 	}
 	
-	JsonObject exportCsv(String classId, String courseId, String userId, String zipFileName);
+	JsonObject exportCsv(String classId, String courseId, String userId, String userRole, String zipFileName);
 
 }

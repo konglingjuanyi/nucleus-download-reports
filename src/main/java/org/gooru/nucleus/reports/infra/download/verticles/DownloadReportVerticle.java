@@ -48,7 +48,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 							um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 							result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
 									body.getString(RouteConstants.CLASS_ID), body.getString(RouteConstants.COURSE_ID),
-									body.getString(RouteConstants.USER_ID), fileName));
+									body.getString(RouteConstants.USER_ID), body.getString(RouteConstants.USER_ROLE), fileName));
 							/**
 							 * delete folder
 							 * vertx.fileSystem().deleteBlocking(config().

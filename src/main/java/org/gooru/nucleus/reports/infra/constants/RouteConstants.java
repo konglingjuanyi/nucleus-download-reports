@@ -18,6 +18,9 @@ public final class RouteConstants {
     public static final String CLASS_ID = "classId";
     public static final String COURSE_ID = "courseId";
     public static final String USER_ID = "userId";
+    public static final String IS_TEACHER = "isTeacher";
+    public static final String IS_STUDENT = "isStudent";
+    public static final String USER_ROLE = "userRole";
     
     public static final String INTERNAL_METRICS_ROUTE = API_BASE_ROUTE + "internal/metrics";
     
