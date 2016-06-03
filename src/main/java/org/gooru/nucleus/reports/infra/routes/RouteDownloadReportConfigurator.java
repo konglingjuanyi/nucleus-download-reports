@@ -39,15 +39,14 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			String userId = routingContext.request().getParam(RouteConstants.USER_ID);
 			LOGGER.info("classId : " + classId + " - courseId:" + courseId + " - userId : " + userId);
-			routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
-					.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
 			if (!isTeacher(classId, userId)) {
 				if (!isStudent(classId, userId)) {
 					LOGGER.info("user is not a valide teacher or student...");
 					routingContext.response().setStatusCode(HttpConstants.HttpStatus.UNAUTHORIZED.getCode())
-							.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
+					.setStatusMessage(HttpConstants.HttpStatus.UNAUTHORIZED.getMessage()).end();
 				}
 			} else {
+				LOGGER.info("User authrized. Process csv generation...");
 				DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
 				routingContext.response().putHeader("content-type", "application/json; charset=utf-8");
 				JsonObject rru = new RouteRequestUtility().getBodyForMessage(routingContext);
@@ -91,6 +90,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			userRole = MessageConstants.MSG_TEACHER;
 			isTeacher = true;
 		}
+		LOGGER.debug("isTeacher : " + isTeacher);
 		return isTeacher;
 	}
 	private boolean isStudent(String classId, String userId) {
@@ -105,6 +105,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			isStudent = true;
 			userRole = MessageConstants.MSG_STUDENT;
 		}
+		LOGGER.debug("studentId : " + studentId);
 		return isStudent;
 	}
 }
