@@ -105,7 +105,7 @@ public class AuthVerticle extends AbstractVerticle {
 	private boolean isTeacher(String classId, String userId) {
 		boolean isTeacher = false;
 		String teacherId = null;
-		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY, classId);
+		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.CLASS, classId);
 		if (classData != null) {
 			teacherId = classData.getStringValue(ConfigConstants._CREATOR_UID, null);
 			LOG.debug("teacherId : " + teacherId);
