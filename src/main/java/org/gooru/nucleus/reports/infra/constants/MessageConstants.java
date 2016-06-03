@@ -18,8 +18,9 @@ public final class MessageConstants {
     public static final String MSG_MESSAGE = "message";
     public static final String MSG_OP_AUTH = "auth";
     public static final String MSG_HEADER_TOKEN = "sessionToken";
+    public static final String MSG_CLASS_ID = "classId";
     public static final String MSG_USER_ANONYMOUS = "anonymous";
-    
+    public static final String MSG_USER_NULL = "User can't be null";
     // Operation names
     public static final String MSG_OP_DOWNLOAD_REPORT_REQUEST = "download.report.request";
     public static final String MSG_OP_DOWNLOAD_REPORT_STATUS = "download.report.status";

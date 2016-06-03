@@ -48,8 +48,11 @@ public class RouteRequestUtility {
 				httpBody = new JsonObject();
 				String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 				String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
+				String userId = routingContext.request().getParam(RouteConstants.USER_ID);
+				
 				httpBody.put(RouteConstants.CLASS_ID, classId);
 				httpBody.put(RouteConstants.COURSE_ID, courseId);
+				httpBody.put(RouteConstants.USER_ID, userId);
 			}
 		}else {
 			httpBody = new JsonObject();

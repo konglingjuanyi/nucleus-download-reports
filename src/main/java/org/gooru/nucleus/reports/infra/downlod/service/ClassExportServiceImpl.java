@@ -11,6 +11,7 @@ import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.ExportConstants;
+import org.gooru.nucleus.reports.infra.constants.RouteConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class ClassExportServiceImpl implements ClassExportService {
 	public JsonObject exportCsv(String classId, String courseId, String userId, String zipFileName) {
 		try {
 			if (StringUtils.isBlank(zipFileName)) {
-				zipFileName = classId;
+				zipFileName = appendHyphen(classId,userId);
 			}
 			JsonObject result = new JsonObject();
 			LOG.debug("FileName : " + um.getFileSaveRealPath() + zipFileName + ConfigConstants.ZIP_EXT);

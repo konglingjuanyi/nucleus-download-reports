@@ -1,12 +1,19 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
+import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.component.RedisClient;
+import org.gooru.nucleus.reports.infra.constants.ColumnFamilyConstants;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
+import org.gooru.nucleus.reports.infra.downlod.service.CqlCassandraDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.netflix.astyanax.connectionpool.OperationResult;
+import com.netflix.astyanax.model.ColumnFamily;
+import com.netflix.astyanax.model.ColumnList;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -17,16 +24,32 @@ import io.vertx.core.json.JsonObject;
 public class AuthVerticle extends AbstractVerticle {
 
 	 private static final Logger LOG = LoggerFactory.getLogger(AuthVerticle.class);
-	    public static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
-
+	 
+	 private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
+	 
+	 private CqlCassandraDao cqlDAO = CqlCassandraDao.instance();
+	 
 	    @Override
 	    public void start(Future<Void> voidFuture) throws Exception {
 	        EventBus eb = vertx.eventBus();
 	        eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
 	            LOG.debug("Received message: " + message.headers());
-	            vertx.executeBlocking(future -> {
-	                JsonObject result = getAccessToken(message.headers().get(MessageConstants.MSG_HEADER_TOKEN));
-	                future.complete(result);
+			vertx.executeBlocking(future -> {
+				String classId = message.headers().get(MessageConstants.MSG_CLASS_ID);
+				String token = message.headers().get(MessageConstants.MSG_HEADER_TOKEN);
+				JsonObject result = getAccessToken(token);
+
+				if (result != null) {
+					String userId = result.getString(MessageConstants.MSG_USER_ID);
+					// Check if user is a teacher
+					if (!isTeacher(classId, userId)) {
+						if (!isStudent(classId, userId)) {
+							result = null;
+							LOG.info("user is not a valide teacher or student...");
+						}
+					}
+				}
+				future.complete(result);
 			}, res -> {
 				if (res.result() != null) {
 					JsonObject result = (JsonObject) res.result();
@@ -82,5 +105,30 @@ public class AuthVerticle extends AbstractVerticle {
 		}
 		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
 		return accessTokenInfo;
+	}
+	
+	private boolean isTeacher(String classId, String userId) {
+		boolean isTeacher = false;
+		String teacherId = null;
+		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.CLASS_ACTIVITY, classId);
+		if (classData != null) {
+			teacherId = classData.getStringValue(ConfigConstants._CREATOR_UID, null);
+		}
+		if (teacherId != null && userId.equalsIgnoreCase(teacherId)) {
+			isTeacher = true;
+		}
+		return isTeacher;
+	}
+	private boolean isStudent(String classId, String userId) {
+		boolean isStudent = false;
+		String studentId = null;
+		ColumnList<String> classData = cqlDAO.readByKey(ColumnFamilyConstants.USER_GROUP_ASSOCIATION, classId);
+		if (classData != null) {
+			studentId = classData.getColumnByName(userId).getName();
+		}
+		if (studentId != null) {
+			isStudent = true;
+		}
+		return isStudent;
 	}
 }

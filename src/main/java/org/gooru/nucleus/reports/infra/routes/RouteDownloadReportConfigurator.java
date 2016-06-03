@@ -30,7 +30,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			String userId = routingContext.request().getParam(RouteConstants.USER_ID);
-			LOGGER.info("classId : " + classId + " - courseId:" + courseId + "userId : " + userId);
+			LOGGER.info("classId : " + classId + " - courseId:" + courseId + " - userId : " + userId);
 			DeliveryOptions options = new DeliveryOptions().setSendTimeout(mbusTimeout * 1000);
 			routingContext.response().putHeader("content-type", "application/json; charset=utf-8");
 			JsonObject rru = new RouteRequestUtility().getBodyForMessage(routingContext);
@@ -42,7 +42,7 @@ final class RouteDownloadReportConfigurator implements RouteConfigurator {
 			String classId = routingContext.request().getParam(RouteConstants.CLASS_ID);
 			String courseId = routingContext.request().getParam(RouteConstants.COURSE_ID);
 			String userId = routingContext.request().getParam(RouteConstants.USER_ID);
-			LOGGER.info("classId : " + classId + " - courseId:" + courseId + "userId : " + userId);
+			LOGGER.info("classId : " + classId + " - courseId:" + courseId + " - userId : " + userId);
 			try {
 				Buffer zipFile = vertx.fileSystem().readFileBlocking(
 						config.getString(ConfigConstants.FILE_SAVE_REAL_PATH) + classId + ConfigConstants.ZIP_EXT);
