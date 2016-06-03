@@ -14,8 +14,13 @@ import java.util.LinkedList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ZipFileGenerator {
 
+	private static final Logger LOG = LoggerFactory.getLogger(ZipFileGenerator.class);
+	
 	private void copy(File file, OutputStream out) throws IOException {
 		InputStream in = new FileInputStream(file);
 		try {
@@ -66,11 +71,8 @@ public class ZipFileGenerator {
 			File fout = new File(zipFile);
 			File dir = new File(sourceDirectory);
 			zip(dir, fout);
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			LOG.error("Exception:", e);
 		}
 	}
 }

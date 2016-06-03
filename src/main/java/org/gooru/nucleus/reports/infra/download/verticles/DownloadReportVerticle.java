@@ -1,5 +1,8 @@
 package org.gooru.nucleus.reports.infra.download.verticles;
 
+import java.io.File;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
@@ -49,12 +52,16 @@ public class DownloadReportVerticle extends AbstractVerticle {
 							result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
 									body.getString(RouteConstants.CLASS_ID), body.getString(RouteConstants.COURSE_ID),
 									body.getString(RouteConstants.USER_ID), body.getString(RouteConstants.USER_ROLE), fileName));
-							/**
-							 * delete folder
-							 * vertx.fileSystem().deleteBlocking(config().
-							 * getString( ConfigConstants.FILE_SAVE_REAL_PATH) +
-							 * ConfigConstants.SLASH + zipFileName);
-							 */
+							  //delete folder
+								File originalDirectory = new File(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH) + ConfigConstants.SLASH + fileName);
+								if(originalDirectory.isDirectory()){
+									LOGGER.info(originalDirectory.getName() + " is going to delete..");
+									FileUtils.deleteDirectory(originalDirectory);
+								}
+							  vertx.fileSystem().deleteBlocking(config().
+							  getString( ConfigConstants.FILE_SAVE_REAL_PATH) +
+							  ConfigConstants.SLASH + fileName);
+							 
 						} else {
 							JsonObject resultObject = new JsonObject();
 							resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(fileName));
