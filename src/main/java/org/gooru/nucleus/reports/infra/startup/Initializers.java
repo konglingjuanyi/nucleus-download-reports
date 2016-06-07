@@ -16,7 +16,7 @@ public class Initializers implements Iterable<Initializer> {
         List<Initializer> initializers = new ArrayList<>();
         initializers.add(CassandraClient.getInstance());
         initializers.add(UtilityManager.getInstance());
-        initializers.add(RedisClient.instance());
+       // initializers.add(RedisClient.instance());
         internalIterator = initializers.iterator();
     }
 

@@ -4,12 +4,12 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.gooru.nucleus.reports.downlod.service.ClassExportService;
 import org.gooru.nucleus.reports.infra.component.UtilityManager;
 import org.gooru.nucleus.reports.infra.constants.ConfigConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
 import org.gooru.nucleus.reports.infra.constants.RouteConstants;
-import org.gooru.nucleus.reports.infra.downlod.service.ClassExportService;
 import org.gooru.nucleus.reports.infra.util.MessageResponse;
 import org.gooru.nucleus.reports.infra.util.MessageResponseFactory;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		EventBus eb = vertx.eventBus();
-	
+
 		MessageConsumer<Object> status = null;
 		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
 			LOGGER.debug("Received message: '{}'", message.body());
@@ -51,13 +51,15 @@ public class DownloadReportVerticle extends AbstractVerticle {
 							um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
 							result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
 									body.getString(RouteConstants.CLASS_ID), body.getString(RouteConstants.COURSE_ID),
-									body.getString(RouteConstants.USER_ID), body.getString(RouteConstants.USER_ROLE), fileName));
-							  //delete folder
-								File originalDirectory = new File(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH) + ConfigConstants.SLASH + fileName);
-								if(originalDirectory.isDirectory()){
-									LOGGER.info(originalDirectory.getName() + " is going to delete..");
-									FileUtils.deleteDirectory(originalDirectory);
-								}
+									body.getString(RouteConstants.USER_ID), body.getString(RouteConstants.USER_ROLE),
+									fileName));
+							// delete folder
+							File originalDirectory = new File(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
+									+ ConfigConstants.SLASH + fileName);
+							if (originalDirectory.isDirectory()) {
+								LOGGER.debug(originalDirectory.getName() + " is going to delete..");
+								FileUtils.deleteDirectory(originalDirectory);
+							}
 						} else {
 							JsonObject resultObject = new JsonObject();
 							resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(fileName));
@@ -66,6 +68,7 @@ public class DownloadReportVerticle extends AbstractVerticle {
 					}
 				} catch (Exception e) {
 					LOGGER.error("exception", e);
+					result = MessageResponseFactory.createInternalErrorResponse(e.getMessage());
 				}
 				future.complete(result);
 			}, res -> {
@@ -74,7 +77,6 @@ public class DownloadReportVerticle extends AbstractVerticle {
 				message.reply(result.reply(), result.deliveryOptions());
 			});
 		});
-
 
 		status.completionHandler(result -> {
 			if (result.succeeded()) {
@@ -90,14 +92,16 @@ public class DownloadReportVerticle extends AbstractVerticle {
 
 	private String getFileName(String message) {
 		JsonObject body = getHttpBody(message);
-		String fileName = body.getString(RouteConstants.CLASS_ID) + ConfigConstants.HYPHEN +body.getString(RouteConstants.USER_ID);
+		String fileName = body.getString(RouteConstants.CLASS_ID) + ConfigConstants.HYPHEN
+				+ body.getString(RouteConstants.USER_ID);
 		return fileName;
 	}
+
 	private JsonObject getHttpBody(String message) {
 		JsonObject body = null;
 		try {
 			body = new JsonObject(message).getJsonObject(MessageConstants.MSG_HTTP_BODY);
-			LOGGER.debug("body : {}",body);
+			LOGGER.debug("body : {}", body);
 		} catch (Exception e) {
 			LOGGER.error("unable to parse json object", e);
 		}

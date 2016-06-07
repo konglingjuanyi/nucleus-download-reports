@@ -14,7 +14,7 @@ public class Finalizers implements Iterable<Finalizer> {
     public Finalizers() {
         List<Finalizer> finalizers = new ArrayList<>();
         finalizers.add(CassandraClient.getInstance());
-        finalizers.add(RedisClient.instance());
+      //  finalizers.add(RedisClient.instance());
         internalIterator = finalizers.iterator();
     }
 

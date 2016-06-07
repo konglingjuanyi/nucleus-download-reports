@@ -4,7 +4,6 @@ import org.gooru.nucleus.reports.infra.component.RedisClient;
 import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 import org.gooru.nucleus.reports.infra.constants.MessagebusEndpoints;
-import org.gooru.nucleus.reports.infra.downlod.service.CqlCassandraDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,17 +15,15 @@ import io.vertx.core.json.JsonObject;
 
 public class AuthVerticle extends AbstractVerticle {
 
-	 private static final Logger LOG = LoggerFactory.getLogger(AuthVerticle.class);
-	 
-	 private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
-	 
-	 private CqlCassandraDao cqlDAO = CqlCassandraDao.instance();
-	 
-	    @Override
-	    public void start(Future<Void> voidFuture) throws Exception {
-	        EventBus eb = vertx.eventBus();
-	        eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
-	            LOG.debug("Received message: " + message.headers());
+	private static final Logger LOG = LoggerFactory.getLogger(AuthVerticle.class);
+
+	private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
+
+	@Override
+	public void start(Future<Void> voidFuture) throws Exception {
+		EventBus eb = vertx.eventBus();
+		eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
+			LOG.debug("Received message: " + message.headers());
 			vertx.executeBlocking(future -> {
 				String token = message.headers().get(MessageConstants.MSG_HEADER_TOKEN);
 				JsonObject result = getAccessToken(token);
@@ -50,19 +47,19 @@ public class AuthVerticle extends AbstractVerticle {
 				}
 			});
 
-	        }).completionHandler(result -> {
-	            if (result.succeeded()) {
-	            	LOG.debug("Application component initialization successful");
-	            	LOG.info("Auth end point ready to listen");
-	            	voidFuture.complete();
-	            } else {
-	                LOG.error("Error registering the auth handler. Halting the Auth machinery");
-	                voidFuture.fail(result.cause());
-	                Runtime.getRuntime().halt(1);
-	            }
-	        });
-	    }
-	    
+		}).completionHandler(result -> {
+			if (result.succeeded()) {
+				LOG.debug("Application component initialization successful");
+				LOG.info("Auth end point ready to listen");
+				voidFuture.complete();
+			} else {
+				LOG.error("Error registering the auth handler. Halting the Auth machinery");
+				voidFuture.fail(result.cause());
+				Runtime.getRuntime().halt(1);
+			}
+		});
+	}
+
 	private JsonObject getAccessToken(String token) {
 		JsonObject accessTokenInfo = null;
 		if (token != null) {
@@ -71,7 +68,7 @@ public class AuthVerticle extends AbstractVerticle {
 				if (accessTokenInfo != null) {
 					int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
 					RedisClient.instance().expire(token, expireAtInSeconds);
-				} else{
+				} else {
 					accessTokenInfo = new JsonObject();
 					LOG.debug("Not able to find token in redis. Sessing might be expired...");
 				}
@@ -79,7 +76,7 @@ public class AuthVerticle extends AbstractVerticle {
 				LOG.error("Exception while writing or writing in redis", e);
 			}
 		}
-		
+
 		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
 		return accessTokenInfo;
 	}

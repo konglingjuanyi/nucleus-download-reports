@@ -1,4 +1,4 @@
-package org.gooru.nucleus.reports.infra.downlod.service;
+package org.gooru.nucleus.reports.generator.component;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -106,17 +106,6 @@ public class CSVFileGenerator {
 			fileName +=DEFAULT_FILE_NAME;
 		}
 		return fileName+ConfigConstants.CSV_EXT;
-	}
-
-	public String getFilePath(String file){
-		
-		String fileName = um.getDownloadAppUrl();
-		if(file != null && (!file.isEmpty())){
-			fileName += file;
-		}else{
-			fileName +=DEFAULT_FILE_NAME;
-		}
-		return fileName;
 	}
 
 	private String convertMillisecondsToTime(long millis) {

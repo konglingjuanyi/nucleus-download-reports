@@ -1,9 +1,8 @@
-package org.gooru.nucleus.reports.infra.downlod.service;
+package org.gooru.nucleus.reports.generator.component;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,12 +13,7 @@ import java.util.LinkedList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ZipFileGenerator {
-
-	private static final Logger LOG = LoggerFactory.getLogger(ZipFileGenerator.class);
 	
 	private void copy(File file, OutputStream out) throws IOException {
 		InputStream in = new FileInputStream(file);
@@ -66,13 +60,9 @@ public class ZipFileGenerator {
 		}
 	}
 
-	public void zipDirectory(String zipFile, String sourceDirectory) {
-		try {
+	public void zipDirectory(String zipFile, String sourceDirectory) throws IOException {
 			File fout = new File(zipFile);
 			File dir = new File(sourceDirectory);
 			zip(dir, fout);
-		} catch (Exception e) {
-			LOG.error("Exception:", e);
-		}
 	}
 }

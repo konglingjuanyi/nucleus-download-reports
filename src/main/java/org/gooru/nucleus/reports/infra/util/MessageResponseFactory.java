@@ -1,7 +1,5 @@
 package org.gooru.nucleus.reports.infra.util;
 
-import java.io.File;
-
 import org.gooru.nucleus.reports.infra.constants.HttpConstants;
 import org.gooru.nucleus.reports.infra.constants.MessageConstants;
 

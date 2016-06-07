@@ -24,7 +24,7 @@ public class VerticleRegistry implements Iterable<String> {
 
     public VerticleRegistry() {
         List<String> initializers = new ArrayList<>();
-        initializers.add(AUTH_VERTICLE);
+        //initializers.add(AUTH_VERTICLE);
         initializers.add(DOWNLOAD_REQUEST_VERTICLE);
         initializers.add(HTTP_VERTICLE);
         internalIterator = initializers.iterator();
