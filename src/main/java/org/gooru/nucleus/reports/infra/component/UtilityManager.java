@@ -20,7 +20,7 @@ public final class UtilityManager implements Initializer, Finalizer {
     private static Map<String, Object> cacheMemery = null;
     private static String fileDownloadAppUrl = null;
     private static String fileSaveRealPath = null;
-    
+
     public static UtilityManager getInstance() {
         return Holder.INSTANCE;
     }
@@ -35,20 +35,24 @@ public final class UtilityManager implements Initializer, Finalizer {
 
     @Override
     public void initializeComponent(Vertx vertx, JsonObject config) {
-    	cacheMemery = new HashMap<String, Object>();
-    	fileDownloadAppUrl = config.getString(ConfigConstants.FILE_DOWNLOAD_APP_URL);
-    	fileSaveRealPath = config.getString(ConfigConstants.FILE_SAVE_REAL_PATH);
+        cacheMemery = new HashMap<>();
+        fileDownloadAppUrl = config.getString(ConfigConstants.FILE_DOWNLOAD_APP_URL);
+        fileSaveRealPath = config.getString(ConfigConstants.FILE_SAVE_REAL_PATH);
     }
-    public Map<String, Object> getCacheMemory(){
-    	return cacheMemery;
+
+    public static Map<String, Object> getCacheMemory() {
+        return cacheMemery;
     }
-    public String getDownloadAppUrl(){
-    	return fileDownloadAppUrl;
+
+    public static String getDownloadAppUrl() {
+        return fileDownloadAppUrl;
     }
-    public String getFileSaveRealPath(){
-    	return fileSaveRealPath;
+
+    public static String getFileSaveRealPath() {
+        return fileSaveRealPath;
     }
+
     private static final class Holder {
-		private static final UtilityManager INSTANCE = new UtilityManager();
-	}
+        private static final UtilityManager INSTANCE = new UtilityManager();
+    }
 }

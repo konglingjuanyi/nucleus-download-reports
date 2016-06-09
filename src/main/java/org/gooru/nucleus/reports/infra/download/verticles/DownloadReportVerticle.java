@@ -25,93 +25,93 @@ import io.vertx.core.json.JsonObject;
  * @author ashish
  */
 public class DownloadReportVerticle extends AbstractVerticle {
-	private static final Logger LOGGER = LoggerFactory.getLogger(DownloadReportVerticle.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadReportVerticle.class);
 
-	private static final ClassExportService classExportService = ClassExportService.instance();
-	private static UtilityManager um = UtilityManager.getInstance();
+    private static final ClassExportService classExportService = ClassExportService.instance();
+    private static final UtilityManager um = UtilityManager.getInstance();
 
-	@Override
-	public void start(Future<Void> startFuture) throws Exception {
-		EventBus eb = vertx.eventBus();
+    @Override
+    public void start(Future<Void> startFuture) throws Exception {
+        EventBus eb = vertx.eventBus();
 
-		MessageConsumer<Object> status = null;
-		status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
-			LOGGER.debug("Received message: '{}'", message.body());
-			vertx.executeBlocking(future -> {
-				MessageResponse result = null;
-				try {
-					JsonObject body = getHttpBody(message.body().toString());
-					if (StringUtils.isBlank(body.getString(RouteConstants.USER_ID))) {
-						LOGGER.debug("User ID is null.....");
-						result = MessageResponseFactory.createForbiddenResponse(MessageConstants.MSG_USER_NULL);
-					} else {
-						String fileName = getFileName(message.body().toString());
-						LOGGER.debug("zipFileName : " + fileName);
-						if (!um.getCacheMemory().containsKey(fileName)) {
-							um.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
-							result = MessageResponseFactory.createOkayResponse(classExportService.exportCsv(
-									body.getString(RouteConstants.CLASS_ID), body.getString(RouteConstants.COURSE_ID),
-									body.getString(RouteConstants.USER_ID), body.getString(RouteConstants.USER_ROLE),
-									fileName));
-							// delete folder
-							File originalDirectory = new File(config().getString(ConfigConstants.FILE_SAVE_REAL_PATH)
-									+ ConfigConstants.SLASH + fileName);
-							if (originalDirectory.isDirectory()) {
-								LOGGER.debug(originalDirectory.getName() + " is going to delete..");
-								FileUtils.deleteDirectory(originalDirectory);
-							}
-						} else {
-							JsonObject resultObject = new JsonObject();
-							resultObject.put(ConfigConstants.STATUS, um.getCacheMemory().get(fileName));
-							result = MessageResponseFactory.createOkayResponse(resultObject);
-						}
-					}
-				} catch (Exception e) {
-					LOGGER.error("exception", e);
-					result = MessageResponseFactory.createInternalErrorResponse(e.getMessage());
-				}
-				future.complete(result);
-			}, res -> {
-				MessageResponse result = (MessageResponse) res.result();
-				LOGGER.debug("Sending response: '{}'", result.reply());
-				message.reply(result.reply(), result.deliveryOptions());
-			});
-		});
+        MessageConsumer<Object> status;
+        status = eb.localConsumer(MessagebusEndpoints.MBEP_DOWNLOAD_REQUEST, message -> {
+            LOGGER.debug("Received message: '{}'", message.body());
+            vertx.executeBlocking(future -> {
+                MessageResponse result = null;
+                try {
+                    JsonObject body = getHttpBody(message.body().toString());
+                    if (StringUtils.isBlank(body.getString(RouteConstants.USER_ID))) {
+                        LOGGER.debug("User ID is null.....");
+                        result = MessageResponseFactory.createForbiddenResponse(MessageConstants.MSG_USER_NULL);
+                    } else {
+                        String fileName = getFileName(message.body().toString());
+                        LOGGER.debug("zipFileName : " + fileName);
+                        if (!UtilityManager.getCacheMemory().containsKey(fileName)) {
+                            UtilityManager.getCacheMemory().put(ConfigConstants.STATUS, ConfigConstants.IN_PROGRESS);
+                            result = MessageResponseFactory.createOkayResponse(classExportService
+                                .exportCsv(body.getString(RouteConstants.CLASS_ID),
+                                    body.getString(RouteConstants.COURSE_ID), body.getString(RouteConstants.USER_ID),
+                                    body.getString(RouteConstants.USER_ROLE), fileName));
+                            // delete folder
+                            File originalDirectory = new File(
+                                config().getString(ConfigConstants.FILE_SAVE_REAL_PATH) + ConfigConstants.SLASH
+                                    + fileName);
+                            if (originalDirectory.isDirectory()) {
+                                LOGGER.debug(originalDirectory.getName() + " is going to delete..");
+                                FileUtils.deleteDirectory(originalDirectory);
+                            }
+                        } else {
+                            JsonObject resultObject = new JsonObject();
+                            resultObject.put(ConfigConstants.STATUS, UtilityManager.getCacheMemory().get(fileName));
+                            result = MessageResponseFactory.createOkayResponse(resultObject);
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("exception", e);
+                    result = MessageResponseFactory.createInternalErrorResponse(e.getMessage());
+                }
+                future.complete(result);
+            }, res -> {
+                MessageResponse result = (MessageResponse) res.result();
+                LOGGER.debug("Sending response: '{}'", result.reply());
+                message.reply(result.reply(), result.deliveryOptions());
+            });
+        });
 
-		status.completionHandler(result -> {
-			if (result.succeeded()) {
-				LOGGER.info("User end point ready to listen");
-				startFuture.complete();
-			} else {
-				LOGGER.error("Error registering the User handler on message bus");
-				startFuture.fail(result.cause());
-			}
-		});
+        status.completionHandler(result -> {
+            if (result.succeeded()) {
+                LOGGER.info("User end point ready to listen");
+                startFuture.complete();
+            } else {
+                LOGGER.error("Error registering the User handler on message bus");
+                startFuture.fail(result.cause());
+            }
+        });
 
-	}
+    }
 
-	private String getFileName(String message) {
-		JsonObject body = getHttpBody(message);
-		String fileName = body.getString(RouteConstants.CLASS_ID) + ConfigConstants.HYPHEN
-				+ body.getString(RouteConstants.USER_ID);
-		return fileName;
-	}
+    private static String getFileName(String message) {
+        JsonObject body = getHttpBody(message);
+        return body.getString(RouteConstants.CLASS_ID) + ConfigConstants.HYPHEN + body
+            .getString(RouteConstants.USER_ID);
+    }
 
-	private JsonObject getHttpBody(String message) {
-		JsonObject body = null;
-		try {
-			body = new JsonObject(message).getJsonObject(MessageConstants.MSG_HTTP_BODY);
-			LOGGER.debug("body : {}", body);
-		} catch (Exception e) {
-			LOGGER.error("unable to parse json object", e);
-		}
-		return body;
-	}
+    private static JsonObject getHttpBody(String message) {
+        JsonObject body = null;
+        try {
+            body = new JsonObject(message).getJsonObject(MessageConstants.MSG_HTTP_BODY);
+            LOGGER.debug("body : {}", body);
+        } catch (Exception e) {
+            LOGGER.error("unable to parse json object", e);
+        }
+        return body;
+    }
 
-	@Override
-	public void stop(Future<Void> stopFuture) throws Exception {
-		// Currently a noop
-		stopFuture.complete();
-	}
+    @Override
+    public void stop(Future<Void> stopFuture) throws Exception {
+        // Currently a noop
+        stopFuture.complete();
+    }
 
 }

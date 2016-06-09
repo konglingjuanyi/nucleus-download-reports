@@ -9,13 +9,14 @@ import com.netflix.astyanax.model.ColumnList;
 
 public interface CqlCassandraDao {
 
-	static CqlCassandraDao instance(){
-		return new CqlCassandraDaoImpl();
-	}
-	
-	ResultSet getArchievedClassMembers(String classId) throws InterruptedException, ExecutionException;
+    static CqlCassandraDao instance() {
+        return new CqlCassandraDaoImpl();
+    }
 
-	ColumnList<String> readByKey(String columnFamilyName, String key) throws ConnectionException;
+    ResultSet getArchievedClassMembers(String classId) throws InterruptedException, ExecutionException;
 
-	ColumnList<String> read(String columnFamilyName, String key, Collection<String> columnList) throws ConnectionException;
+    ColumnList<String> readByKey(String columnFamilyName, String key) throws ConnectionException;
+
+    ColumnList<String> read(String columnFamilyName, String key, Collection<String> columnList)
+        throws ConnectionException;
 }

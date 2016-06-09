@@ -1,21 +1,22 @@
 {
   "comment": "This is bundled JSON file. Idea is that we should externalize this also as part of build. Currently this is going to hold the dev env information",
-  "redis.config" : {
-    "host" : "localhost",
-    "port" : 6379
+  "redis.config": {
+    "host": "localhost",
+    "port": 6379
   },
   "defaultDataSource": {
-    	"cassandra.seeds":"127.0.0.1",
-	"cassandra.cluster":"archive",
-	"cassandra.datacenter":"datacenter1",
-	"cassandra.keyspace":"event_logger_insights"
+    "cassandra.seeds": "127.0.0.1",
+    "cassandra.cluster": "archive",
+    "cassandra.datacenter": "datacenter1",
+    "cassandra.keyspace": "event_logger_insights"
   },
-"org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle": {
+  "org.gooru.nucleus.reports.infra.download.verticles.DownloadReportVerticle": {
     "instances": 1,
     "worker": false,
-    "config": { 
-	"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
-  }},
+    "config": {
+      "insights.file.real.path": "/home/daniel/workspace/insights-api-3.0.1/reports/"
+    }
+  },
   "org.gooru.nucleus.reports.infra.download.verticles.HttpVerticle": {
     "instances": 1,
     "worker": false,
@@ -24,13 +25,14 @@
       "metrics.periodicity.seconds": 600,
       "message.bus.send.timeout.seconds": 600,
       "request.body.size.max.mb": 5,
-      "insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
+      "insights.file.real.path": "/home/daniel/workspace/insights-api-3.0.1/reports/"
     }
   },
-"org.gooru.nucleus.reports.infra.download.verticles.AuthVerticle": {
+  "org.gooru.nucleus.reports.infra.download.verticles.AuthVerticle": {
     "instances": 1,
     "worker": false,
     "config": {
-  }},
-"insights.file.real.path":"/home/daniel/workspace/insights-api-3.0.1/reports/"
+    }
+  },
+  "insights.file.real.path": "/home/daniel/workspace/insights-api-3.0.1/reports/"
 }
