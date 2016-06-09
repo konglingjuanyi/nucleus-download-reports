@@ -28,7 +28,7 @@ public final class MessageConstants {
     // Operation names
     public static final String MSG_OP_DOWNLOAD_REPORT_REQUEST = "download.report.request";
     public static final String MSG_OP_DOWNLOAD_REPORT_STATUS = "download.report.status";
-    
+
     // Containers for different responses
     public static final String RESP_CONTAINER_MBUS = "mb.container";
     public static final String RESP_CONTAINER_EVENT = "mb.event";

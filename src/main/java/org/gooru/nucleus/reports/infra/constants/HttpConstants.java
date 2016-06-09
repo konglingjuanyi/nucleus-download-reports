@@ -11,10 +11,10 @@ public final class HttpConstants {
     public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     public static final String HEADER_LOCATION = "Location";
     public static final String CONTENT_TYPE_JSON = "application/json; charset=utf-8";
-    public static final String CONTENT_TYPE_ZIP =  "application/zip";
+    public static final String CONTENT_TYPE_ZIP = "application/zip";
     public static final String TOKEN = "Token";
     public static final String HEADER_SESSION_TOKEN = "sessionToken";
-    
+
     private HttpConstants() {
         throw new AssertionError();
     }
@@ -36,7 +36,7 @@ public final class HttpConstants {
         TOO_LARGE(413, "Request Entity Too Large"),
         TOO_MANY_REQUESTS(429, "Too Many Requests"),
         ERROR(500, "Internal Server Error");
-    	
+
         private final int code;
         private final String message;
 

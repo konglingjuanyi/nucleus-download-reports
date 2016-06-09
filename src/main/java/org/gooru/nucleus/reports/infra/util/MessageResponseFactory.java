@@ -55,7 +55,6 @@ public final class MessageResponseFactory {
             .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, message)).build();
     }
 
-
     public static MessageResponse createCreatedResponse(String location) {
         return new MessageResponse.Builder().successful().setStatusCreated()
             .setHeader(HttpConstants.HEADER_LOCATION, location).build();

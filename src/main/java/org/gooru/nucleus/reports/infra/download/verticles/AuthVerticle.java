@@ -15,69 +15,69 @@ import io.vertx.core.json.JsonObject;
 
 public class AuthVerticle extends AbstractVerticle {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AuthVerticle.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthVerticle.class);
 
-	private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
+    private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
 
-	@Override
-	public void start(Future<Void> voidFuture) throws Exception {
-		EventBus eb = vertx.eventBus();
-		eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
-			LOG.debug("Received message: " + message.headers());
-			vertx.executeBlocking(future -> {
-				String token = message.headers().get(MessageConstants.MSG_HEADER_TOKEN);
-				JsonObject result = getAccessToken(token);
+    @Override
+    public void start(Future<Void> voidFuture) throws Exception {
+        EventBus eb = vertx.eventBus();
+        eb.localConsumer(MessagebusEndpoints.MBEP_AUTH, message -> {
+            LOG.debug("Received message: " + message.headers());
+            vertx.executeBlocking(future -> {
+                String token = message.headers().get(MessageConstants.MSG_HEADER_TOKEN);
+                JsonObject result = getAccessToken(token);
 
-				future.complete(result);
-			}, res -> {
-				if (res.result() != null) {
-					JsonObject result = (JsonObject) res.result();
-					DeliveryOptions options = null;
-					if (!result.isEmpty()) {
-						options = new DeliveryOptions().addHeader(MessageConstants.MSG_OP_STATUS,
-								MessageConstants.MSG_OP_STATUS_SUCCESS);
-					} else {
-						options = new DeliveryOptions().addHeader(MessageConstants.MSG_OP_STATUS,
-								MessageConstants.MSG_OP_STATUS_ERROR);
-					}
-					message.reply(result, options);
-				} else {
-					LOG.debug("Unhandled exception. It could be redis issue...");
-					message.fail(HttpConstants.HttpStatus.ERROR.getCode(), HttpConstants.HttpStatus.ERROR.getMessage());
-				}
-			});
+                future.complete(result);
+            }, res -> {
+                if (res.result() != null) {
+                    JsonObject result = (JsonObject) res.result();
+                    DeliveryOptions options = null;
+                    if (!result.isEmpty()) {
+                        options = new DeliveryOptions()
+                            .addHeader(MessageConstants.MSG_OP_STATUS, MessageConstants.MSG_OP_STATUS_SUCCESS);
+                    } else {
+                        options = new DeliveryOptions()
+                            .addHeader(MessageConstants.MSG_OP_STATUS, MessageConstants.MSG_OP_STATUS_ERROR);
+                    }
+                    message.reply(result, options);
+                } else {
+                    LOG.debug("Unhandled exception. It could be redis issue...");
+                    message.fail(HttpConstants.HttpStatus.ERROR.getCode(), HttpConstants.HttpStatus.ERROR.getMessage());
+                }
+            });
 
-		}).completionHandler(result -> {
-			if (result.succeeded()) {
-				LOG.debug("Application component initialization successful");
-				LOG.info("Auth end point ready to listen");
-				voidFuture.complete();
-			} else {
-				LOG.error("Error registering the auth handler. Halting the Auth machinery");
-				voidFuture.fail(result.cause());
-				Runtime.getRuntime().halt(1);
-			}
-		});
-	}
+        }).completionHandler(result -> {
+            if (result.succeeded()) {
+                LOG.debug("Application component initialization successful");
+                LOG.info("Auth end point ready to listen");
+                voidFuture.complete();
+            } else {
+                LOG.error("Error registering the auth handler. Halting the Auth machinery");
+                voidFuture.fail(result.cause());
+                Runtime.getRuntime().halt(1);
+            }
+        });
+    }
 
-	private JsonObject getAccessToken(String token) {
-		JsonObject accessTokenInfo = null;
-		if (token != null) {
-			try {
-				accessTokenInfo = RedisClient.instance().getJsonObject(token);
-				if (accessTokenInfo != null) {
-					int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
-					RedisClient.instance().expire(token, expireAtInSeconds);
-				} else {
-					accessTokenInfo = new JsonObject();
-					LOG.debug("Not able to find token in redis. Sessing might be expired...");
-				}
-			} catch (Exception e) {
-				LOG.error("Exception while writing or writing in redis", e);
-			}
-		}
+    private static JsonObject getAccessToken(String token) {
+        JsonObject accessTokenInfo = null;
+        if (token != null) {
+            try {
+                accessTokenInfo = RedisClient.instance().getJsonObject(token);
+                if (accessTokenInfo != null) {
+                    int expireAtInSeconds = accessTokenInfo.getInteger(ACCESS_TOKEN_VALIDITY);
+                    RedisClient.instance().expire(token, expireAtInSeconds);
+                } else {
+                    accessTokenInfo = new JsonObject();
+                    LOG.debug("Not able to find token in redis. Sessing might be expired...");
+                }
+            } catch (Exception e) {
+                LOG.error("Exception while writing or writing in redis", e);
+            }
+        }
 
-		LOG.debug("accessTokenInfo : {}", accessTokenInfo);
-		return accessTokenInfo;
-	}
+        LOG.debug("accessTokenInfo : {}", accessTokenInfo);
+        return accessTokenInfo;
+    }
 }
